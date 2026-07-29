@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Araçları — Giriş</title>
+    <style>
+        :root {
+            --grad-a: #667eea;
+            --grad-b: #764ba2;
+            --accent: #4CAF50;
+            --text: #1a1a2e;
+            --muted: #6c757d;
+            --card-bg: rgba(255, 255, 255, 0.97);
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: linear-gradient(145deg, var(--grad-a) 0%, var(--grad-b) 55%, #5a3d6a 100%);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+        .home-wrap {
+            width: 100%;
+            max-width: 920px;
+        }
+        .home-header {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 36px;
+        }
+        .home-header h1 {
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
+            font-weight: 700;
+            margin: 0 0 10px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+        .home-header p {
+            margin: 0;
+            font-size: 1rem;
+            opacity: 0.92;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+        .home-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .home-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .home-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+        }
+        .home-card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        .home-card-icon.sunum {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        .home-card-icon.rapor {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+        }
+        .home-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .home-card p {
+            margin: 0 0 20px;
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.55;
+            flex: 1;
+        }
+        .home-card a.btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: filter 0.15s ease, transform 0.1s ease;
+        }
+        .home-card a.btn:active { transform: scale(0.98); }
+        .home-card a.btn-primary {
+            background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+        }
+        .home-card a.btn-primary:hover { filter: brightness(1.08); }
+        .home-card a.btn-secondary {
+            background: linear-gradient(135deg, #0d9488, #22c55e);
+        }
+        .home-card a.btn-secondary:hover { filter: brightness(1.08); }
+        .home-footer {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.75);
+        }
+        .home-credit {
+            margin: 14px 0 0;
+            font-size: 0.72rem;
+            font-weight: 400;
+            letter-spacing: 0.04em;
+            color: rgba(255,255,255,0.45);
+        }
+    </style>
+</head>
+<body>
+    <div class="home-wrap">
+        <header class="home-header">
+            <h1>Excel Araçları</h1>
+            <p>Raporlarınızdan sunum oluşturun veya fotoğrafları toplu indirin. Uygulamayı seçerek devam edin.</p>
+        </header>
+        <div class="home-cards">
+            <article class="home-card">
+                <div class="home-card-icon sunum" aria-hidden="true">📊</div>
+                <h2>Rapordan Sunum</h2>
+                <p>Excel’deki görsel bağlantıları ve metinleri kullanarak PowerPoint sunumu üretin. Tekli, çiftli veya üçlü slayt düzenleri.</p>
+                {% if is_pro %}
+                <a class="btn btn-primary" href="{{ url_for('sunum_app') }}">Sunum oluşturmaya git →</a>
+                {% else %}
+                <a class="btn btn-primary" href="{{ url_for('pricing', reason='pro_required', next='/sunum') }}">Pro ile aç →</a>
+                {% endif %}
+            </article>
+            <article class="home-card">
+                <div class="home-card-icon rapor" aria-hidden="true">🖼️</div>
+                <h2>Rapordan Fotoğraf</h2>
+                <p>Rapor Excel’inizden URL veya gömülü verilere göre fotoğrafları çıkarıp indirin. Ayarlar ve iş mantığı bu ekrandan yönetilir.</p>
+                {% if is_pro %}
+                <a class="btn btn-secondary" href="{{ url_for('rapor_fotograf_app') }}">Fotoğraf indirmeye git →</a>
+                {% else %}
+                <a class="btn btn-secondary" href="{{ url_for('pricing', reason='pro_required', next='/rapor-fotograf') }}">Pro ile aç →</a>
+                {% endif %}
+            </article>
+        </div>
+        <div class="home-user" style="margin-top:22px;text-align:center;color:rgba(255,255,255,0.9);font-size:0.9rem;">
+            {% if is_authenticated %}
+            <span>{{ current_user_email }}</span>
+            &nbsp;·&nbsp;
+            <span style="opacity:0.85;">Plan: {{ user_plan|upper }}</span>
+            &nbsp;·&nbsp;
+            <a href="{{ url_for('landing') }}" style="color:#fff;font-weight:600;">Site</a>
+            &nbsp;·&nbsp;
+            <a href="{{ url_for('pricing') }}" style="color:#fff;font-weight:600;">Fiyatlandırma</a>
+            &nbsp;·&nbsp;
+            <a href="{{ url_for('logout') }}" style="color:#fff;font-weight:600;">Çıkış</a>
+            {% endif %}
+        </div>
+        <p class="home-footer">Dosyalarınız hesabınıza özel klasörde saklanır.</p>
+        <p class="home-credit">Created by M.Akcali</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapordan Fotoğraf</title>
+    <style>
+        :root {
+            --bg: #f0f2f8;
+            --card: #fff;
+            --border: #e2e8f0;
+            --primary: #0d9488;
+            --primary2: #22c55e;
+            --text: #1e293b;
+            --muted: #64748b;
+            --danger: #dc2626;
+            --radius: 12px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+        }
+        .rf-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .rf-nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .rf-nav a:hover { text-decoration: underline; }
+        .rf-nav-title { font-weight: 700; font-size: 1rem; }
+        .rf-main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: minmax(320px, 1fr) minmax(300px, 440px);
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            align-items: stretch;
+        }
+        .rf-left-col {
+            max-height: calc(100vh - 56px);
+            overflow-y: auto;
+        }
+        .rf-right-col {
+            max-height: calc(100vh - 56px);
+            overflow-y: auto;
+        }
+        @media (max-width: 960px) {
+            .rf-main { grid-template-columns: 1fr; }
+            .rf-left-col, .rf-right-col { max-height: none; }
+        }
+        .rf-panel {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .rf-panel h2 {
+            margin: 0 0 6px;
+            font-size: 1.1rem;
+        }
+        .rf-panel .rf-hint {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 16px;
+            line-height: 1.45;
+        }
+        .rf-drop {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            background: #fafbfc;
+            margin-bottom: 12px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .rf-drop.dragover {
+            border-color: var(--primary);
+            background: #ecfdf5;
+        }
+        .rf-drop p { margin: 0 0 8px; font-size: 0.9rem; }
+        input[type="file"] { width: 100%; font-size: 0.85rem; }
+        .rf-btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+        button.rf-btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: filter 0.15s, transform 0.1s;
+        }
+        button.rf-btn:active { transform: scale(0.98); }
+        button.rf-btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: #fff;
+        }
+        button.rf-btn-primary:hover:not(:disabled) { filter: brightness(1.06); }
+        button.rf-btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        button.rf-btn-ghost {
+            background: #f1f5f9;
+            color: var(--text);
+        }
+        .rf-status {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: none;
+        }
+        .rf-status.ok { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .rf-status.err { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .rf-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin: 18px 0 8px;
+            font-weight: 700;
+        }
+        .rf-section-title:first-of-type { margin-top: 0; }
+        .rf-dynamic {
+            min-height: 40px;
+        }
+        .rf-dynamic .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .rf-dynamic select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
+        .rf-log-panel h2 { margin-bottom: 8px; }
+        .rf-log {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-family: ui-monospace, Consolas, monospace;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            max-height: min(420px, 50vh);
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .rf-log.empty { color: var(--muted); background: #f8fafc; border: 1px dashed var(--border); }
+        .rf-progress {
+            margin-top: 12px;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            display: none;
+            position: relative;
+        }
+        .rf-progress.show { display: block; }
+        .rf-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--primary2));
+            transition: width 0.2s ease;
+        }
+        .rf-progress-wrap { margin-top: 12px; }
+        .rf-progress-label {
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-top: 8px;
+            line-height: 1.4;
+            min-height: 1.2em;
+        }
+        .rf-sheet-block {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            background: #fafbfc;
+        }
+        .rf-sheet-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #f1f5f9;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
+        .rf-sheet-head label { display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; }
+        .rf-sheet-cols {
+            padding: 10px 12px 12px;
+        }
+        .rf-sheet-cols-title {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .rf-col-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 6px 12px;
+        }
+        .rf-col-grid label {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            line-height: 1.3;
+        }
+        label.opt {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .rf-overlay-hint {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        .rf-out-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .rf-browser-row {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .rf-browser-row.show { display: flex; }
+        #rfFolderStatus { font-size: 0.82rem; color: var(--primary); font-weight: 600; }
+        .rf-path-hint {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin: 0;
+            line-height: 1.45;
+        }
+        .rf-progress.indeterminate .rf-progress-bar {
+            width: 40%;
+            animation: rf-indet 1.2s ease-in-out infinite;
+        }
+        @keyframes rf-indet {
+            0% { transform: translateX(-30%); }
+            100% { transform: translateX(250%); }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="rf-nav">
+        <a href="{{ url_for('dashboard') }}">← Ana sayfa</a>
+        <span class="rf-nav-title">Rapordan Fotoğraf</span>
+        <span style="display:flex;gap:14px;align-items:center;">
+            <a href="{{ url_for('sunum_app') }}" style="font-weight:600;">Rapordan Sunum</a>
+            {% if is_authenticated %}
+            <a href="{{ url_for('logout') }}" title="{{ current_user_email }}">Çıkış</a>
+            {% endif %}
+        </span>
+    </nav>
+
+    <main class="rf-main">
+        <div class="rf-panel rf-left-col">
+            <h2>Sol — Sayfa ve sütun seçimi</h2>
+            <p class="rf-hint">Sağdan Excel yükledikten sonra burada tüm <strong>sheet</strong>’ler görünür. Fotoğraf <strong>URL</strong> sütunlarını ve dosya adına eklenecek <strong>başlık</strong> sütunlarını işaretleyin.</p>
+
+            <div class="rf-section-title" style="margin-top:0;">Sayfalar ve fotoğraf URL sütunları</div>
+            <p class="rf-hint" style="margin-top:0;">Sayfanın solundaki kutuyu kapatırsanız o sayfa işlenmez. Birden fazla URL sütunu seçebilirsiniz.</p>
+            <div class="rf-dynamic" id="rfSheetColumns"></div>
+
+            <div class="rf-section-title">Dosya adına eklenecek başlıklar</div>
+            <p class="rf-hint" style="margin-top:0;">Aynı satırdaki değerler dosya adına eklenir (ör. Mağaza + Şehir). Excel yüklenince sütun listesi dolur.</p>
+            <div class="rf-dynamic" id="rfFilenameCols"></div>
+        </div>
+
+        <div class="rf-panel rf-right-col">
+            <h2>Sağ — Excel ve indirme</h2>
+            <p class="rf-hint"><strong>.xlsx</strong> / <strong>.xls</strong> yükleyin. <strong>İndir</strong> tek adımdır: önce kaç fotoğraf URL’si olduğu sayılır, sunucu ZIP üretir, dosya otomatik iner (ek izin yok). <strong>Klasöre kaydet</strong> için yalnızca klasör seçimi gerekir.</p>
+
+            <div class="rf-drop" id="rfDrop">
+                <p>Excel dosyasını seçin veya sürükleyin</p>
+                <input type="file" id="rfFile" accept=".xlsx,.xls">
+            </div>
+            <div class="rf-btn-row">
+                <button type="button" class="rf-btn rf-btn-primary" id="rfUploadBtn" disabled>Dosyayı yükle</button>
+                <button type="button" class="rf-btn rf-btn-ghost" id="rfClearBtn" disabled>Temizle</button>
+            </div>
+            <div id="rfUploadStatus" class="rf-status"></div>
+
+            <div class="rf-section-title">Çıktı</div>
+            <div class="rf-out-mode" id="rfOutMode">
+                <label class="opt">
+                    <input type="radio" name="rfOut" value="zip" checked>
+                    <span><strong>ZIP olarak indir</strong> — Tek dosya; açtığınızda her sayfa ayrı klasördedir.</span>
+                </label>
+                <label class="opt">
+                    <input type="radio" name="rfOut" value="folder">
+                    <span><strong>Seçtiğim klasöre kaydet</strong> — Alt klasörler sayfa adlarıyla oluşturulur.</span>
+                </label>
+                <div class="rf-browser-row" id="rfBrowserWrap">
+                    <button type="button" class="rf-btn rf-btn-ghost" id="rfPickFolderBtn">İndirilecek klasörü seç</button>
+                    <span id="rfFolderStatus"></span>
+                    <p class="rf-path-hint">Tarayıcı güvenliği nedeniyle hedef klasörü bir kez onaylamanız gerekir.</p>
+                </div>
+            </div>
+
+            <div class="rf-section-title">Seçenekler</div>
+            <label class="opt" style="margin-top:0;">
+                <input type="checkbox" id="rfOverlayLabels">
+                <span><strong>Resmin içine etiket ekle</strong> — Sol altta; her başlık <strong>ayrı satırda</strong> (ör. Mağaza: … / Şehir: …).</span>
+            </label>
+            <p class="rf-overlay-hint">Sol tarafta işaretlediğiniz başlıklar kullanılır; hiçbiri yoksa sütun adı ve satır numarası yazılır.</p>
+
+            <div class="rf-section-title">İşlem</div>
+            <div class="rf-btn-row">
+                <button type="button" class="rf-btn rf-btn-primary" id="rfRunBtn" disabled>İndir</button>
+            </div>
+
+            <div class="rf-progress-wrap">
+                <div class="rf-progress" id="rfProgress"><div class="rf-progress-bar" id="rfProgressBar"></div></div>
+                <div class="rf-progress-label" id="rfProgressLabel"></div>
+            </div>
+            <div class="rf-section-title">Günlük</div>
+            <div class="rf-log empty" id="rfLog">Henüz kayıt yok. Dosya yükleyip işlemi başlatın.</div>
+        </div>
+    </main>
+
+    <script>
+        let currentFile = null;
+        let serverFilename = null;
+        let sheetsData = {};
+        let dirHandle = null;
+
+        const el = (id) => document.getElementById(id);
+        const log = (msg, isError) => {
+            const box = el('rfLog');
+            if (box.classList.contains('empty')) {
+                box.classList.remove('empty');
+                box.textContent = '';
+            }
+            const line = (isError ? '[HATA] ' : '') + (typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2));
+            box.textContent += (box.textContent ? '\n' : '') + line;
+            box.scrollTop = box.scrollHeight;
+        };
+
+        function setUploadStatus(text, ok) {
+            const s = el('rfUploadStatus');
+            s.className = 'rf-status ' + (ok === undefined ? '' : ok ? 'ok' : 'err');
+            s.style.display = text ? 'block' : 'none';
+            s.textContent = text || '';
+        }
+
+        function setProgressMeta(text) {
+            el('rfProgressLabel').textContent = text || '';
+        }
+
+        function setProgress(p) {
+            const wrap = el('rfProgress');
+            const bar = el('rfProgressBar');
+            wrap.classList.remove('indeterminate');
+            if (p == null) {
+                wrap.classList.remove('show');
+                bar.style.width = '0%';
+                setProgressMeta('');
+                return;
+            }
+            wrap.classList.add('show');
+            bar.style.width = Math.min(100, Math.max(0, p)) + '%';
+        }
+
+        function setProgressBusy() {
+            const wrap = el('rfProgress');
+            const bar = el('rfProgressBar');
+            wrap.classList.add('show', 'indeterminate');
+            bar.style.width = '35%';
+        }
+
+        function buildSheetColumnUI(sheetNames, data) {
+            const host = el('rfSheetColumns');
+            host.innerHTML = '';
+            if (!sheetNames || !sheetNames.length) return;
+            sheetNames.forEach((sheetName) => {
+                const cols = data[sheetName] || [];
+                const block = document.createElement('div');
+                block.className = 'rf-sheet-block';
+                block.setAttribute('data-sheet', sheetName);
+
+                const head = document.createElement('div');
+                head.className = 'rf-sheet-head';
+                const lab = document.createElement('label');
+                const inc = document.createElement('input');
+                inc.type = 'checkbox';
+                inc.className = 'rf-sheet-include';
+                inc.checked = true;
+                lab.appendChild(inc);
+                lab.appendChild(document.createTextNode(' '));
+                const sp = document.createElement('span');
+                sp.textContent = sheetName;
+                lab.appendChild(sp);
+                const meta = document.createElement('span');
+                meta.style.fontSize = '0.75rem';
+                meta.style.color = 'var(--muted)';
+                meta.textContent = cols.length + ' sütun';
+                head.appendChild(lab);
+                head.appendChild(meta);
+
+                const body = document.createElement('div');
+                body.className = 'rf-sheet-cols';
+                const st = document.createElement('div');
+                st.className = 'rf-sheet-cols-title';
+                st.textContent = 'Fotoğraf URL sütunları (birden fazla işaretleyebilirsiniz)';
+                body.appendChild(st);
+                const grid = document.createElement('div');
+                grid.className = 'rf-col-grid';
+                cols.forEach((col) => {
+                    const l = document.createElement('label');
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.className = 'rf-col-cb';
+                    cb.value = col;
+                    l.appendChild(cb);
+                    l.appendChild(document.createTextNode(' ' + col));
+                    grid.appendChild(l);
+                });
+                body.appendChild(grid);
+                block.appendChild(head);
+                block.appendChild(body);
+                host.appendChild(block);
+            });
+        }
+
+        function buildFilenameColumnUI(sheetNames, data) {
+            const host = el('rfFilenameCols');
+            host.innerHTML = '';
+            const set = new Set();
+            (sheetNames || []).forEach((s) => (data[s] || []).forEach((c) => set.add(String(c))));
+            const cols = Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'));
+            if (!cols.length) return;
+            const st = document.createElement('div');
+            st.className = 'rf-sheet-cols-title';
+            st.textContent = 'Dosya adına eklenecek başlıklar (çoklu seçim)';
+            host.appendChild(st);
+            const grid = document.createElement('div');
+            grid.className = 'rf-col-grid';
+            cols.forEach((col) => {
+                const l = document.createElement('label');
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'rf-fname-cb';
+                cb.value = col;
+                l.appendChild(cb);
+                l.appendChild(document.createTextNode(' ' + col));
+                grid.appendChild(l);
+            });
+            host.appendChild(grid);
+        }
+
+        function collectFilenameColumns() {
+            return Array.from(document.querySelectorAll('.rf-fname-cb:checked')).map((c) => c.value);
+        }
+
+        function collectColumnsBySheet() {
+            const out = {};
+            document.querySelectorAll('.rf-sheet-block').forEach((block) => {
+                const sheetName = block.getAttribute('data-sheet');
+                if (!sheetName) return;
+                const include = block.querySelector('.rf-sheet-include');
+                if (!include || !include.checked) return;
+                const cols = Array.from(block.querySelectorAll('.rf-col-cb:checked')).map((c) => c.value);
+                if (cols.length) out[sheetName] = cols;
+            });
+            return out;
+        }
+
+        function updateOutModeUI() {
+            const mode = document.querySelector('input[name="rfOut"]:checked').value;
+            el('rfBrowserWrap').classList.toggle('show', mode === 'folder');
+        }
+
+        document.querySelectorAll('input[name="rfOut"]').forEach((r) => {
+            r.addEventListener('change', updateOutModeUI);
+        });
+
+        el('rfPickFolderBtn').addEventListener('click', async () => {
+            if (!window.showDirectoryPicker) {
+                log('Klasöre doğrudan kayıt için Chrome veya Edge kullanın.', true);
+                return;
+            }
+            try {
+                dirHandle = await window.showDirectoryPicker();
+                el('rfFolderStatus').textContent = 'Klasör seçildi. «İndir» ile devam edin.';
+            } catch (e) {
+                if (e && e.name !== 'AbortError') log(String(e), true);
+            }
+        });
+
+        function fmtBytes(n) {
+            if (n < 1024) return n + ' B';
+            if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+            return (n / 1048576).toFixed(1) + ' MB';
+        }
+
+        /**
+         * Tek POST: ZIP yanıtı. Sunucu işi bitene kadar süre uzun; yanıt gövdesi gelirken onprogress ile çubuk güncellenir.
+         */
+        function xhrPostProcessZip(payload, onDownloadProgress) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/rapor-fotograf/process');
+                xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+                xhr.responseType = 'blob';
+                xhr.onprogress = (e) => {
+                    if (e.lengthComputable && onDownloadProgress) {
+                        onDownloadProgress(e.loaded, e.total);
+                    }
+                };
+                xhr.onload = () => {
+                    if (xhr.status === 401) {
+                        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+                        reject(new Error('Oturum gerekli'));
+                        return;
+                    }
+                    const ct = (xhr.getResponseHeader('Content-Type') || '').toLowerCase();
+                    if (ct.includes('application/json')) {
+                        const rd = new FileReader();
+                        rd.onload = () => {
+                            try {
+                                const j = JSON.parse(rd.result);
+                                reject(new Error(j.error || 'Sunucu hatası'));
+                            } catch {
+                                reject(new Error('Sunucu hatası'));
+                            }
+                        };
+                        rd.onerror = () => reject(new Error('Sunucu yanıtı okunamadı'));
+                        rd.readAsText(xhr.response);
+                        return;
+                    }
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve({
+                            blob: xhr.response,
+                            count: xhr.getResponseHeader('X-Rapor-Image-Count'),
+                            contentDisposition: xhr.getResponseHeader('Content-Disposition'),
+                        });
+                    } else {
+                        reject(new Error(xhr.statusText || 'İstek başarısız'));
+                    }
+                };
+                xhr.onerror = () => reject(new Error('Ağ hatası — sunucu çalışıyor mu?'));
+                xhr.send(JSON.stringify(payload));
+            });
+        }
+
+        function parseZipNameFromDisposition(disp) {
+            let name = 'rapor_fotograflar.zip';
+            if (disp && /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.test(disp)) {
+                const m = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disp);
+                if (m && m[1]) name = m[1].replace(/['"]/g, '');
+            }
+            return name;
+        }
+
+        async function writeZipToDirectory(zipBlob, handle, onFileProgress) {
+            if (typeof JSZip === 'undefined') throw new Error('JSZip yüklenemedi.');
+            const zip = await JSZip.loadAsync(zipBlob);
+            const entries = Object.entries(zip.files).filter(([, e]) => !e.dir);
+            let done = 0;
+            for (const [relPath, entry] of entries) {
+                const parts = relPath.split('/').filter(Boolean);
+                let dh = handle;
+                for (let i = 0; i < parts.length - 1; i++) {
+                    dh = await dh.getDirectoryHandle(parts[i], { create: true });
+                }
+                const fileName = parts[parts.length - 1];
+                const fh = await dh.getFileHandle(fileName, { create: true });
+                const writable = await fh.createWritable();
+                const buf = await entry.async('arraybuffer');
+                await writable.write(buf);
+                await writable.close();
+                done += 1;
+                if (onFileProgress) onFileProgress(done, entries.length);
+            }
+        }
+
+        el('rfFile').addEventListener('change', (e) => {
+            currentFile = e.target.files[0] || null;
+            el('rfUploadBtn').disabled = !currentFile;
+            el('rfClearBtn').disabled = !currentFile;
+        });
+
+        el('rfDrop').addEventListener('dragover', (e) => { e.preventDefault(); el('rfDrop').classList.add('dragover'); });
+        el('rfDrop').addEventListener('dragleave', () => el('rfDrop').classList.remove('dragover'));
+        el('rfDrop').addEventListener('drop', (e) => {
+            e.preventDefault();
+            el('rfDrop').classList.remove('dragover');
+            const f = e.dataTransfer.files[0];
+            if (f && /\.(xlsx|xls)$/i.test(f.name)) {
+                el('rfFile').files = e.dataTransfer.files;
+                currentFile = f;
+                el('rfUploadBtn').disabled = false;
+                el('rfClearBtn').disabled = false;
+            }
+        });
+
+        el('rfClearBtn').addEventListener('click', () => {
+            currentFile = null;
+            serverFilename = null;
+            sheetsData = {};
+            el('rfFile').value = '';
+            el('rfUploadBtn').disabled = true;
+            el('rfClearBtn').disabled = true;
+            el('rfRunBtn').disabled = true;
+            el('rfSheetColumns').innerHTML = '';
+            el('rfFilenameCols').innerHTML = '';
+            el('rfOverlayLabels').checked = false;
+            document.querySelector('input[name="rfOut"][value="zip"]').checked = true;
+            dirHandle = null;
+            el('rfFolderStatus').textContent = '';
+            updateOutModeUI();
+            setUploadStatus('');
+            setProgress(null);
+        });
+
+        el('rfUploadBtn').addEventListener('click', () => {
+            if (!currentFile) return;
+            const fd = new FormData();
+            fd.append('file', currentFile);
+            setUploadStatus('Yükleniyor…', undefined);
+            setProgress(30);
+            fetch('/upload', { method: 'POST', body: fd })
+                .then((r) => {
+                    if (r.status === 401) {
+                        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+                        return Promise.reject(new Error('Oturum gerekli'));
+                    }
+                    return r.json().then((j) => ({ ok: r.ok, j }));
+                })
+                .then(({ ok, j }) => {
+                    setProgress(100);
+                    setTimeout(() => setProgress(null), 400);
+                    if (!ok || j.error) {
+                        setUploadStatus(j.error || 'Yükleme başarısız', false);
+                        log(j.error || 'Yükleme hatası', true);
+                        return;
+                    }
+                    serverFilename = j.filename;
+                    sheetsData = j.sheets_data || {};
+                    setUploadStatus('Dosya hazır: ' + j.filename, true);
+                    buildSheetColumnUI(j.sheets || [], sheetsData);
+                    buildFilenameColumnUI(j.sheets || [], sheetsData);
+                    el('rfRunBtn').disabled = false;
+                    log('Yükleme tamam. Sayfalar: ' + (j.sheets || []).join(', '));
+                })
+                .catch((e) => {
+                    setProgress(null);
+                    setUploadStatus(String(e), false);
+                    log(String(e), true);
+                });
+        });
+
+        el('rfRunBtn').addEventListener('click', async () => {
+            if (!serverFilename) return;
+            const columnsBySheet = collectColumnsBySheet();
+            const keys = Object.keys(columnsBySheet);
+            if (keys.length === 0) {
+                log('En az bir sayfada ve o sayfada en az bir fotoğraf sütunu seçmelisiniz.', true);
+                return;
+            }
+            const mode = document.querySelector('input[name="rfOut"]:checked').value;
+            if (mode === 'folder' && !dirHandle) {
+                log('Önce «İndirilecek klasörü seç» ile hedef klasörü seçin.', true);
+                return;
+            }
+            const payload = {
+                filename: serverFilename,
+                options: {
+                    columns_by_sheet: columnsBySheet,
+                    filename_columns: collectFilenameColumns(),
+                    overlay_labels: el('rfOverlayLabels').checked
+                }
+            };
+            el('rfRunBtn').disabled = true;
+            log('İşlem başlıyor…');
+            try {
+                setProgressBusy();
+                setProgressMeta('Fotoğraf URL’leri sayılıyor…');
+                const cntRes = await fetch('/api/rapor-fotograf/count', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const cntJ = await cntRes.json().catch(() => ({}));
+                if (!cntRes.ok) {
+                    setProgress(null);
+                    log(cntJ.error || 'Sayım başarısız', true);
+                    return;
+                }
+                const totalUrls = typeof cntJ.total === 'number' ? cntJ.total : 0;
+                setProgressBusy();
+                setProgressMeta(
+                    totalUrls
+                        ? totalUrls + ' fotoğraf — sunucuda hazırlanıyor (ZIP oluşunca inecek)…'
+                        : 'Sunucuda hazırlanıyor…'
+                );
+
+                const result = await xhrPostProcessZip(payload, (loaded, totalB) => {
+                    if (totalB > 0) {
+                        const pct = 12 + Math.floor((loaded / totalB) * 83);
+                        setProgress(Math.min(96, pct));
+                        setProgressMeta(
+                            'ZIP alınıyor: ' + fmtBytes(loaded) + ' / ' + fmtBytes(totalB)
+                        );
+                    } else {
+                        setProgressBusy();
+                        setProgressMeta(
+                            totalUrls
+                                ? totalUrls + ' fotoğraf işlendi; ZIP oluşturuluyor…'
+                                : 'ZIP oluşturuluyor, lütfen bekleyin…'
+                        );
+                    }
+                });
+
+                const blob = result.blob;
+                const saved = result.count ? parseInt(result.count, 10) : 0;
+                const zipName = parseZipNameFromDisposition(result.contentDisposition);
+
+                if (mode === 'folder') {
+                    setProgress(97);
+                    setProgressMeta('Klasöre yazılıyor…');
+                    let lastD = 1;
+                    await writeZipToDirectory(blob, dirHandle, (n, d) => {
+                        lastD = d;
+                        const p = 97 + Math.round((n / d) * 3);
+                        setProgress(Math.min(100, p));
+                        setProgressMeta('Klasöre yazılıyor: ' + n + ' / ' + d + ' dosya');
+                    });
+                    setProgress(100);
+                    setProgressMeta('Bitti: ' + saved + ' fotoğraf kaydedildi.');
+                    log('Klasöre yazıldı (' + saved + ' fotoğraf, ' + lastD + ' dosya).');
+                } else {
+                    const u = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = u;
+                    a.download = zipName;
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(u), 60 * 1000);
+                    setProgress(100);
+                    setProgressMeta('İndirildi: ' + saved + ' fotoğraf');
+                    log('ZIP indirildi: ' + zipName + ' (' + saved + ' fotoğraf).');
+                }
+                setTimeout(() => setProgress(null), 1800);
+            } catch (e) {
+                setProgress(null);
+                log('[HATA] ' + (e && e.message ? e.message : String(e)), true);
+            } finally {
+                el('rfRunBtn').disabled = false;
+            }
+        });
+
+        updateOutModeUI();
+    </script>
+</body>
+</html>

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report2Slide — Excel Reports to Professional Slides</title>
+    <meta name="description" content="Turn Excel field reports into polished PowerPoint decks and download report photos in bulk. Automate your presentation workflow with Report2Slide.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c1222;
+            --bg-elevated: #141c2e;
+            --surface: #1a2438;
+            --text: #f4f1ea;
+            --muted: #9aa3b5;
+            --accent: #e8a054;
+            --accent-deep: #c4782e;
+            --teal: #3d9b8f;
+            --line: rgba(244, 241, 234, 0.12);
+            --radius: 4px;
+            --font-display: "Fraunces", Georgia, serif;
+            --font-body: "Sora", system-ui, sans-serif;
+            --max: 1120px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.55;
+            overflow-x: hidden;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .site-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse 80% 50% at 70% -10%, rgba(232, 160, 84, 0.18), transparent 55%),
+                radial-gradient(ellipse 60% 40% at 0% 40%, rgba(61, 155, 143, 0.12), transparent 50%),
+                linear-gradient(180deg, #0c1222 0%, #0a101c 100%);
+        }
+
+        .site-bg::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .wrap {
+            width: min(100% - 2.5rem, var(--max));
+            margin-inline: auto;
+        }
+
+        /* —— Nav —— */
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 0;
+            gap: 1rem;
+        }
+
+        .brand {
+            font-family: var(--font-display);
+            font-size: 1.45rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .brand span { color: var(--accent); }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.4rem;
+            font-family: var(--font-body);
+            font-size: 0.92rem;
+            font-weight: 600;
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #1a1208;
+            box-shadow: 0 8px 28px rgba(232, 160, 84, 0.28);
+        }
+
+        .btn-primary:hover {
+            background: #f0b56e;
+            box-shadow: 0 10px 32px rgba(232, 160, 84, 0.38);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--line);
+        }
+
+        .btn-ghost:hover { border-color: rgba(244, 241, 234, 0.28); }
+
+        .btn-nav {
+            padding: 0.55rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* —— Hero —— */
+        .hero {
+            min-height: calc(100vh - 72px);
+            display: grid;
+            align-content: center;
+            padding: 2rem 0 4rem;
+            position: relative;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        @media (min-width: 960px) {
+            .hero-grid {
+                grid-template-columns: 1.05fr 0.95fr;
+                gap: 2.5rem;
+            }
+        }
+
+        .hero-copy {
+            max-width: 36rem;
+            animation: rise 0.9s ease both;
+        }
+
+        .hero-brand {
+            font-family: var(--font-display);
+            font-size: clamp(2.6rem, 6vw, 3.75rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-brand em {
+            font-style: normal;
+            color: var(--accent);
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+            font-weight: 500;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin-bottom: 1rem;
+            max-width: 22ch;
+        }
+
+        .hero-lead {
+            color: var(--muted);
+            font-size: 1.02rem;
+            max-width: 38ch;
+            margin-bottom: 1.75rem;
+        }
+
+        .hero-cta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .hero-note {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 1rem;
+        }
+
+        /* Visual mockup */
+        .hero-visual {
+            position: relative;
+            animation: rise 1s 0.15s ease both;
+        }
+
+        .mockup-stage {
+            position: relative;
+            aspect-ratio: 4 / 3;
+            border-radius: 12px;
+            background:
+                linear-gradient(145deg, rgba(26, 36, 56, 0.9), rgba(20, 28, 46, 0.95));
+            border: 1px solid var(--line);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+            overflow: hidden;
+            padding: 1.25rem;
+        }
+
+        .mockup-stage::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent 40%, rgba(232, 160, 84, 0.06) 50%, transparent 60%);
+            animation: sheen 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .flow {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0.75rem;
+            height: 100%;
+            align-items: stretch;
+            position: relative;
+            z-index: 1;
+        }
+
+        .panel {
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            min-width: 0;
+        }
+
+        .panel-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .sheet-row {
+            display: grid;
+            grid-template-columns: 18px 1fr 1fr;
+            gap: 0.35rem;
+            align-items: center;
+            font-size: 0.62rem;
+            color: var(--muted);
+        }
+
+        .sheet-cell {
+            height: 10px;
+            border-radius: 2px;
+            background: rgba(244, 241, 234, 0.08);
+        }
+
+        .sheet-cell.img {
+            background: linear-gradient(90deg, var(--teal), rgba(61, 155, 143, 0.35));
+            height: 22px;
+            border-radius: 3px;
+        }
+
+        .sheet-num {
+            font-variant-numeric: tabular-nums;
+            opacity: 0.6;
+        }
+
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            animation: pulse-arrow 2.2s ease-in-out infinite;
+        }
+
+        .slide-stack {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .slide-card {
+            flex: 1;
+            border-radius: 6px;
+            background: linear-gradient(160deg, #243049, #1a2235);
+            border: 1px solid rgba(232, 160, 84, 0.25);
+            padding: 0.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem;
+            animation: slide-in 0.8s ease both;
+        }
+
+        .slide-card:nth-child(2) { animation-delay: 0.2s; }
+
+        .slide-photo {
+            border-radius: 3px;
+            background:
+                linear-gradient(135deg, rgba(61, 155, 143, 0.55), rgba(232, 160, 84, 0.35));
+            min-height: 36px;
+        }
+
+        .slide-photo.alt {
+            background: linear-gradient(135deg, rgba(232, 160, 84, 0.5), rgba(61, 155, 143, 0.3));
+        }
+
+        .slide-caption {
+            grid-column: 1 / -1;
+            height: 6px;
+            width: 70%;
+            background: rgba(244, 241, 234, 0.15);
+            border-radius: 2px;
+        }
+
+        .float-badge {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            background: rgba(12, 18, 34, 0.92);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 0.45rem 0.9rem;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--muted);
+            white-space: nowrap;
+            backdrop-filter: blur(8px);
+            animation: float-y 3.5s ease-in-out infinite;
+        }
+
+        .float-badge strong { color: var(--accent); font-weight: 600; }
+
+        /* —— Features —— */
+        .section {
+            padding: 5rem 0;
+            border-top: 1px solid var(--line);
+        }
+
+        .section-head {
+            max-width: 36rem;
+            margin-bottom: 2.5rem;
+            animation: rise 0.7s ease both;
+        }
+
+        .section-head h2 {
+            font-family: var(--font-display);
+            font-size: clamp(1.75rem, 3.5vw, 2.35rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.65rem;
+        }
+
+        .section-head p {
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (min-width: 720px) {
+            .features { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .feature {
+            padding: 1.5rem 1.25rem 1.6rem;
+            border-top: 2px solid var(--accent);
+            background: linear-gradient(180deg, rgba(26, 36, 56, 0.65), transparent);
+            transition: background 0.2s ease;
+        }
+
+        .feature:hover {
+            background: linear-gradient(180deg, rgba(26, 36, 56, 0.95), rgba(26, 36, 56, 0.2));
+        }
+
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .feature h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .feature p {
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        /* —— Pricing teaser —— */
+        .pricing-teaser {
+            display: grid;
+            gap: 1.5rem;
+            align-items: center;
+            padding: 2.5rem 0;
+        }
+
+        @media (min-width: 800px) {
+            .pricing-teaser {
+                grid-template-columns: 1.2fr 0.8fr;
+                gap: 3rem;
+            }
+        }
+
+        .pricing-teaser h2 {
+            font-family: var(--font-display);
+            font-size: clamp(1.75rem, 3.5vw, 2.35rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+
+        .pricing-teaser p {
+            color: var(--muted);
+            margin-bottom: 1.25rem;
+            max-width: 42ch;
+        }
+
+        .pricing-panel {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 1.75rem;
+            background: var(--bg-elevated);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--teal));
+        }
+
+        .pricing-panel .plan-name {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-panel .plan-title {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .pricing-panel .plan-desc {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* —— Footer —— */
+        footer {
+            border-top: 1px solid var(--line);
+            padding: 2rem 0 2.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        footer .brand {
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: 1px solid var(--line);
+            color: var(--text);
+            padding: 0.4rem 0.65rem;
+            border-radius: var(--radius);
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 720px) {
+            .nav-links {
+                display: none;
+            }
+            .nav-links.open {
+                display: flex;
+                position: absolute;
+                top: 64px;
+                right: 1.25rem;
+                left: 1.25rem;
+                flex-direction: column;
+                background: var(--bg-elevated);
+                border: 1px solid var(--line);
+                padding: 1rem;
+                border-radius: 8px;
+                z-index: 20;
+            }
+            .nav-toggle { display: inline-flex; }
+            .nav { position: relative; }
+            .flow { grid-template-columns: 1fr; grid-template-rows: 1fr auto 1fr; }
+            .flow-arrow { transform: rotate(90deg); }
+            .float-badge { font-size: 0.65rem; }
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes sheen {
+            0%, 100% { transform: translateX(-30%); opacity: 0.3; }
+            50% { transform: translateX(30%); opacity: 0.7; }
+        }
+
+        @keyframes pulse-arrow {
+            0%, 100% { transform: translateX(0); opacity: 0.7; }
+            50% { transform: translateX(4px); opacity: 1; }
+        }
+
+        @media (max-width: 720px) {
+            @keyframes pulse-arrow {
+                0%, 100% { transform: rotate(90deg) translateX(0); opacity: 0.7; }
+                50% { transform: rotate(90deg) translateX(4px); opacity: 1; }
+            }
+        }
+
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float-y {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-6px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="site-bg" aria-hidden="true"></div>
+
+    <div class="wrap">
+        <header class="nav">
+            <a class="brand" href="{{ url_for('landing') }}">Report<span>2</span>Slide</a>
+            <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false">Menu</button>
+            <nav class="nav-links" id="navLinks">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                {% if is_authenticated %}
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a class="btn btn-primary btn-nav" href="{{ url_for('dashboard') }}">Open app</a>
+                {% else %}
+                <a href="{{ url_for('login') }}">Log in</a>
+                <a class="btn btn-primary btn-nav" href="{{ url_for('register') }}">Get Started</a>
+                {% endif %}
+            </nav>
+        </header>
+
+        <section class="hero">
+            <div class="hero-grid">
+                <div class="hero-copy">
+                    <p class="hero-brand">Report<em>2</em>Slide</p>
+                    <h1>Turn Your Excel Reports into Professional Slide Decks in Minutes</h1>
+                    <p class="hero-lead">Stop wasting hours copy-pasting data and images. Automate your presentation workflow with Report2Slide.</p>
+                    <div class="hero-cta">
+                        {% if is_authenticated %}
+                        <a class="btn btn-primary" href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+                        {% else %}
+                        <a class="btn btn-primary" href="{{ url_for('register') }}">Get Started Now</a>
+                        <a class="btn btn-ghost" href="{{ url_for('login') }}">Log in</a>
+                        {% endif %}
+                    </div>
+                    <p class="hero-note">Built for field teams, retail audits, and merchandising reports.</p>
+                </div>
+
+                <div class="hero-visual" aria-hidden="true">
+                    <div class="mockup-stage">
+                        <div class="flow">
+                            <div class="panel">
+                                <div class="panel-label">Excel report</div>
+                                <div class="sheet-row"><span class="sheet-num">1</span><div class="sheet-cell"></div><div class="sheet-cell img"></div></div>
+                                <div class="sheet-row"><span class="sheet-num">2</span><div class="sheet-cell"></div><div class="sheet-cell img"></div></div>
+                                <div class="sheet-row"><span class="sheet-num">3</span><div class="sheet-cell"></div><div class="sheet-cell img"></div></div>
+                                <div class="sheet-row"><span class="sheet-num">4</span><div class="sheet-cell"></div><div class="sheet-cell img"></div></div>
+                                <div class="sheet-row"><span class="sheet-num">5</span><div class="sheet-cell"></div><div class="sheet-cell img"></div></div>
+                            </div>
+                            <div class="flow-arrow">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                                </svg>
+                            </div>
+                            <div class="panel">
+                                <div class="panel-label">Slide deck</div>
+                                <div class="slide-stack">
+                                    <div class="slide-card">
+                                        <div class="slide-photo"></div>
+                                        <div class="slide-photo alt"></div>
+                                        <div class="slide-caption"></div>
+                                    </div>
+                                    <div class="slide-card">
+                                        <div class="slide-photo alt"></div>
+                                        <div class="slide-photo"></div>
+                                        <div class="slide-caption"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="float-badge">Excel → PPTX &amp; photo ZIP · <strong>automated</strong></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="features">
+            <div class="section-head">
+                <h2>Everything your report workflow needs</h2>
+                <p>From spreadsheet URLs to polished decks and organized photo packs—without the manual grind.</p>
+            </div>
+            <div class="features">
+                <article class="feature">
+                    <svg class="feature-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                        <rect x="6" y="8" width="22" height="28" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 14h14M10 20h14M10 26h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M32 16l10 8-10 8V16z" fill="currentColor" opacity="0.85"/>
+                    </svg>
+                    <h3>Data to Slides</h3>
+                    <p>Map Excel image columns into single, double, or triple layouts. Captions and labels land exactly where you need them.</p>
+                </article>
+                <article class="feature">
+                    <svg class="feature-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                        <rect x="8" y="10" width="32" height="26" rx="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="18" cy="20" r="4" stroke="currentColor" stroke-width="2"/>
+                        <path d="M8 30l8-6 6 5 8-9 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3>Image Extraction</h3>
+                    <p>Pull every photo URL from your report into a structured ZIP—sheet folders, smart filenames, optional on-image labels.</p>
+                </article>
+                <article class="feature">
+                    <svg class="feature-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                        <rect x="7" y="9" width="34" height="30" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <path d="M14 17h20M14 24h14M14 31h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="36" cy="34" r="7" fill="var(--bg)" stroke="currentColor" stroke-width="2"/>
+                        <path d="M36 31v6M33 34h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <h3>Custom Templates</h3>
+                    <p>Tune positions, backgrounds, grouping, and typography so every deck matches your brand—not a generic dump.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="pricing">
+            <div class="pricing-teaser">
+                <div>
+                    <h2>Simple pricing, powerful results</h2>
+                    <p>Start free to explore your account. Unlock Report2Slide Pro when you’re ready to automate decks and photo exports at scale.</p>
+                    <div class="hero-cta">
+                        {% if is_authenticated %}
+                        <a class="btn btn-primary" href="{{ url_for('pricing') }}">View plans</a>
+                        {% else %}
+                        <a class="btn btn-primary" href="{{ url_for('register') }}">Get Started Now</a>
+                        <a class="btn btn-ghost" href="{{ url_for('pricing') }}">See pricing</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="pricing-panel">
+                    <div class="plan-name">Pro access</div>
+                    <div class="plan-title">Slide decks + photo packs</div>
+                    <p class="plan-desc">One subscription unlocks both Rapordan Sunum and Rapordan Fotoğraf tools—secure, per-user file storage included.</p>
+                    {% if is_authenticated %}
+                    <a class="btn btn-primary" href="{{ url_for('pricing') }}" style="width:100%;">Upgrade to Pro</a>
+                    {% else %}
+                    <a class="btn btn-primary" href="{{ url_for('register') }}" style="width:100%;">Create free account</a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <a class="brand" href="{{ url_for('landing') }}">Report<span>2</span>Slide</a>
+            <span>© {{ current_year }} Report2Slide. Built for teams who ship reports every week.</span>
+        </footer>
+    </div>
+
+    <script>
+        const toggle = document.getElementById('navToggle');
+        const links = document.getElementById('navLinks');
+        if (toggle && links) {
+            toggle.addEventListener('click', () => {
+                const open = links.classList.toggle('open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+        }
+    </script>
+</body>
+</html>

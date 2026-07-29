@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol — Excel Araçları</title>
+    <style>
+        :root {
+            --grad-a: #667eea;
+            --grad-b: #764ba2;
+            --text: #1a1a2e;
+            --muted: #6c757d;
+            --danger: #b91c1c;
+            --card-bg: rgba(255, 255, 255, 0.97);
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: linear-gradient(145deg, var(--grad-a) 0%, var(--grad-b) 55%, #5a3d6a 100%);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px 28px;
+            box-shadow: var(--shadow);
+        }
+        h1 { margin: 0 0 6px; font-size: 1.5rem; }
+        .sub { margin: 0 0 22px; color: var(--muted); font-size: 0.92rem; line-height: 1.45; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            margin-bottom: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #fff;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+            margin-top: 4px;
+        }
+        button:hover { filter: brightness(1.06); }
+        .alert {
+            background: #fef2f2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 0.88rem;
+            margin-bottom: 14px;
+        }
+        .footer {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+        .footer a { color: #667eea; font-weight: 600; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Hesap oluştur</h1>
+        <p class="sub">E-posta ve şifrenizle Excel Araçları’na kaydolun.</p>
+        {% if error %}
+        <div class="alert">{{ error }}</div>
+        {% endif %}
+        <form method="post" action="{{ url_for('register') }}">
+            <label for="email">E-posta</label>
+            <input type="email" id="email" name="email" required autocomplete="email" value="{{ email or '' }}">
+            <label for="password">Şifre (en az 6 karakter)</label>
+            <input type="password" id="password" name="password" required autocomplete="new-password" minlength="6">
+            <label for="password2">Şifre tekrar</label>
+            <input type="password" id="password2" name="password2" required autocomplete="new-password" minlength="6">
+            <button type="submit">Kayıt ol</button>
+        </form>
+        <p class="footer">Zaten hesabınız var mı? <a href="{{ url_for('login') }}">Giriş yapın</a> · <a href="{{ url_for('landing') }}">Ana site</a></p>
+    </div>
+</body>
+</html>

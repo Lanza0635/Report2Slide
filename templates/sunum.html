@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerPoint Sunum Oluşturucu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .app-top-nav {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 18px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            z-index: 20;
+        }
+        .app-top-nav a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .app-top-nav a:hover { text-decoration: underline; }
+        .app-top-nav-title {
+            font-size: 15px;
+            color: #333;
+            font-weight: 600;
+        }
+        .app-top-nav-spacer { width: 120px; text-align: right; }
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 0;
+            flex: 1;
+            min-height: 0;
+            height: calc(100vh - 44px);
+            max-width: 100%;
+            margin: 0;
+        }
+        .preview-container {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            display: none;
+        }
+        .preview-container.visible {
+            display: block;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            height: 100%;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            min-height: calc(100vh - 44px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+        .welcome-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .welcome-subtitle {
+            font-size: 24px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        .welcome-description {
+            font-size: 18px;
+            max-width: 600px;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+        .welcome-arrow {
+            font-size: 60px;
+            margin-top: 40px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(0);
+            }
+            40% {
+                transform: translateX(10px);
+            }
+            60% {
+                transform: translateX(5px);
+            }
+        }
+        h1, h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 3px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .preview-area {
+            border: 1px solid #ccc;
+            padding: 15px;
+            background-color: #f9f9f9;
+            margin-top: 15px;
+            height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .position-config {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin: 8px 0;
+        }
+        .position-group {
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .position-group h4 {
+            margin-top: 0;
+            color: #555;
+            font-size: 14px;
+        }
+        .position-input {
+            margin: 4px 0;
+            display: flex;
+            align-items: center;
+        }
+        .position-input label {
+            display: inline-block;
+            width: 100px;
+            font-size: 12px;
+        }
+        .position-input input {
+            width: 60px;
+            padding: 3px;
+            font-size: 12px;
+        }
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab-button {
+            padding: 8px 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            color: #666;
+            font-size: 12px;
+        }
+        .tab-button.active {
+            border-bottom: 3px solid #4CAF50;
+            color: #333;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        #slidePreview {
+            position: relative;
+            /* 16:9 Formatı */
+            width: 1066px;
+            height: 600px;
+            margin: 0 auto;
+            border: 2px solid #333;
+            background-color: white;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: background-image 0.3s ease;
+        }
+        .preview-slide {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .preview-image {
+            position: absolute;
+            border: 1px solid #4CAF50;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .preview-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+        .preview-title {
+            position: absolute;
+            background: rgba(33, 150, 243, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            overflow: hidden;
+            font-weight: bold;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .preview-title.wrap {
+            word-break: break-word;
+            white-space: pre-line;
+            align-items: flex-start;
+        }
+        .preview-title.normal {
+            white-space: nowrap;
+        }
+        .preview-label {
+            position: absolute;
+            background: rgba(248, 249, 250, 0.95);
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            color: #212529;
+            font-size: 11px;
+            overflow: hidden;
+            padding: 8px;
+            box-sizing: border-box;
+            line-height: 1.3;
+            border: 1px solid rgba(206, 212, 218, 0.8);
+        }
+        .preview-label.with-border {
+            border: 1px solid #6c757d;
+            background: rgba(248, 249, 250, 0.98);
+        }
+        .config-section {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .config-section h4 {
+            margin-top: 0;
+            color: #555;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            font-size: 13px;
+        }
+        .upload-status {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .dimension-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .label-bold {
+            font-weight: bold;
+            color: #0d6efd;
+            margin-right: 5px;
+        }
+        .preview-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            margin: 2px 0;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+        }
+        .sample-content {
+            font-size: 10px;
+            text-align: left;
+            width: 100%;
+        }
+        .sample-image {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .progress-container {
+            display: none;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .progress-bar {
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            font-size: 12px;
+            text-align: center;
+            color: #555;
+        }
+        .form-section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        label {
+            font-size: 13px;
+        }
+        select {
+            padding: 5px;
+            font-size: 13px;
+            width: 100%;
+        }
+        .label-tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .label-tab {
+            padding: 6px 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            color: #666;
+            font-size: 11px;
+        }
+        .label-tab.active {
+            border-bottom: 3px solid #0d6efd;
+            color: #333;
+            font-weight: bold;
+        }
+        .label-tab-content {
+            display: none;
+        }
+        .label-tab-content.active {
+            display: block;
+        }
+        .label-count-selector {
+            margin: 10px 0;
+        }
+        .label-count-selector label {
+            font-size: 13px;
+            margin-right: 10px;
+        }
+        .label-count-selector select {
+            width: 80px;
+            display: inline-block;
+        }
+        .advanced-options {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+        }
+        .advanced-options .form-section-title {
+            color: #2e7d32;
+        }
+        .preview-controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .preview-controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .preview-control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .preview-control-item {
+            display: flex;
+            align-items: center;
+        }
+        .preview-control-item label {
+            margin-left: 8px;
+            font-size: 14px;
+        }
+        .preview-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .preview-buttons button {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+        }
+        #createButton {
+            background-color: #2196F3;
+        }
+        #createButton:hover {
+            background-color: #1976D2;
+        }
+        .preview-controls-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 8px;
+        }
+        .column-pairing {
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        .column-pair {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .column-pair select {
+            flex: 1;
+        }
+        .pair-number {
+            font-weight: bold;
+            color: #0d6efd;
+            min-width: 30px;
+        }
+        .pairing-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        .add-pair-btn, .remove-pair-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .remove-pair-btn {
+            background-color: #dc3545;
+        }
+        .remove-pair-btn:hover {
+            background-color: #c82333;
+        }
+        .triple-options {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+        }
+        .bg-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .bg-remove-btn {
+            background-color: #dc3545;
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+        .bg-remove-btn:hover {
+            background-color: #c82333;
+        }
+        .bg-gallery-host {
+            margin-top: 12px;
+            padding: 10px;
+            min-height: 100px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+        }
+        .bg-gallery-host .bg-gallery-title {
+            font-size: 12px;
+            color: #495057;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .bg-gallery-empty {
+            font-size: 12px;
+            color: #868e96;
+            padding: 12px 4px;
+        }
+        .bg-gallery-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .bg-gallery-item {
+            position: relative;
+            width: 96px;
+            flex-shrink: 0;
+            cursor: pointer;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 3px solid transparent;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .bg-gallery-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        }
+        .bg-gallery-item.selected {
+            border-color: #2196F3;
+            box-shadow: 0 0 0 1px #2196F3;
+        }
+        .bg-gallery-item img {
+            display: block;
+            width: 96px;
+            height: 54px;
+            object-fit: cover;
+            background: #e9ecef;
+        }
+        .bg-gallery-item .bg-gallery-name {
+            font-size: 10px;
+            padding: 4px 6px;
+            background: #f8f9fa;
+            color: #495057;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 96px;
+        }
+        .bg-gallery-item .bg-gallery-delete {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 22px;
+            height: 22px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(220, 53, 69, 0.95);
+            color: #fff;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+            z-index: 2;
+        }
+        .bg-gallery-item .bg-gallery-delete:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <nav class="app-top-nav">
+        <a href="{{ url_for('dashboard') }}">← Ana sayfa</a>
+        <span class="app-top-nav-title">Rapordan Sunum</span>
+        <span class="app-top-nav-spacer" style="display:flex;gap:12px;justify-content:flex-end;align-items:center;min-width:200px;">
+            <a href="{{ url_for('rapor_fotograf_app') }}">Rapordan Fotoğraf</a>
+            {% if is_authenticated %}
+            <a href="{{ url_for('logout') }}" title="{{ current_user_email }}">Çıkış</a>
+            {% endif %}
+        </span>
+    </nav>
+    <div class="main-container">
+        <div class="preview-container" id="previewContainer">
+            <div class="section">
+                <h2>Sunum Önizleme</h2>
+                <div class="preview-area">
+                    <div id="slidePreview">
+                        <div class="preview-slide" id="previewSlide">
+                        </div>
+                    </div>
+                    
+                    <div class="preview-legend" id="previewLegend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #4CAF50;"></div>
+                            <span>Resim</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #2196F3;"></div>
+                            <span>Başlık</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f8f9fa; border: 1px solid #6c757d;"></div>
+                            <span>Etiket</span>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-text" id="progressText">Sunum hazırlanıyor...</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressPercent">%0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-controls" id="previewControls" style="display:none;">
+                <div class="preview-controls-title">Sunum Kontrolleri</div>
+                
+                <div class="preview-controls-grid">
+                    <div class="preview-control-group">
+                        <div class="preview-control-item">
+                            <input type="checkbox" id="previewGroupByName" onchange="updatePreview()">
+                            <label for="previewGroupByName">Aynı isme göre sırala (Satırları grupla)</label>
+                        </div>
+                        <div class="preview-control-item">
+                            <input type="checkbox" id="previewSkipSingleImages" onchange="updatePreview()">
+                            <label for="previewSkipSingleImages">Tekli resimleri atla</label>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-control-group">
+                        <div class="preview-control-item">
+                            <input type="checkbox" id="previewUseColumnTitles" onchange="updatePreview()">
+                            <label for="previewUseColumnTitles">Sütun başlıklarını kullan</label>
+                        </div>
+                        <div class="preview-control-item">
+                            <input type="checkbox" id="previewAddLabelBorder" onchange="updatePreview()">
+                            <label for="previewAddLabelBorder">Etiketlere çerçeve ekle</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="triple-options" id="tripleOptions" style="display: none;">
+                    <div class="preview-control-item">
+                        <input type="checkbox" id="previewSkipEmptyRows" onchange="updatePreview()">
+                        <label for="previewSkipEmptyRows"><strong>Boş satırları atla</strong> - Eksik resimleri tamamlamak için sonraki satırlardan resim al</label>
+                    </div>
+                </div>
+                
+                <div class="preview-buttons">
+                    <button onclick="createPresentation()" id="createButton">Sunumu Oluştur ve İndir</button>
+                    <button onclick="updatePreview()">Önizlemeyi Güncelle</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="welcome-screen" id="welcomeScreen">
+            <div class="welcome-title">PowerPoint Sunum Oluşturucu</div>
+            <div class="welcome-subtitle">Excel'den PowerPoint'e Dönüştürme Aracı</div>
+            <div class="welcome-description">
+                Excel dosyanızı yükleyin, ayarlarınızı yapın ve profesyonel PowerPoint sunumlarınızı otomatik olarak oluşturun.
+            </div>
+            <div class="welcome-arrow">→</div>
+        </div>
+
+        <div class="form-container">
+            <h1>PowerPoint Oluşturucu</h1>
+            
+            <div class="section">
+                <div class="form-section-title">1. Excel Dosyası Yükle</div>
+                <input type="file" id="excelFile" accept=".xlsx,.xls" style="width: 100%; margin-bottom: 8px;">
+                <button onclick="uploadFile()">Dosyayı Yükle</button>
+                <div id="uploadStatus"></div>
+            </div>
+            
+            <div class="section" id="sheetSection" style="display:none;">
+                <div class="form-section-title">2. Sheet Seçin</div>
+                <div id="sheetCheckboxes" class="checkbox-group"></div>
+            </div>
+            
+            <div class="section" id="presentationTypeSection" style="display:none;">
+                <div class="form-section-title">3. Sunum Türü Seçin</div>
+                <select id="presentationType" onchange="changePresentationType()">
+                    <option value="single">Tekli Slayt</option>
+                    <option value="double">Çiftli Slayt</option>
+                    <option value="triple">Üçlü Slayt</option>
+                </select>
+            </div>
+            
+            <div class="section" id="columnSection" style="display:none;">
+                <div class="form-section-title">4. Resim Sütunlarını Seçin</div>
+                <div id="columnCheckboxes" class="checkbox-group"></div>
+                
+                <div id="columnPairingSection" class="column-pairing" style="display: none;">
+                    <div class="form-section-title">Sütun Eşleştirme</div>
+                    <div class="pairing-info">
+                        Çiftli sunum için sütunları eşleştirin. Her çift aynı slaytta gösterilecektir.
+                        "Tekli resimleri atla" seçeneği aktifse, her iki sütunda da resim olmayan çiftler atlanacaktır.
+                    </div>
+                    <div id="columnPairsContainer">
+                    </div>
+                    <button type="button" class="add-pair-btn" onclick="addColumnPair()">+ Çift Ekle</button>
+                </div>
+            </div>
+
+            <div class="section" id="groupingSection" style="display:none;">
+                <div class="form-section-title">5. Gruplama Seçenekleri</div>
+                
+                <div id="groupingOptions" style="margin-top:10px;">
+                    <div style="font-size: 13px; margin-bottom: 8px;">Gruplama için sütun seçin:</div>
+                    <select id="groupingColumn" style="width: 100%; margin-bottom: 8px;" onchange="updatePreview()">
+                        <option value="">-- Gruplama sütunu seçin --</option>
+                    </select>
+                    <div style="font-size: 12px; color: #666;">
+                        Not: Aynı değere sahip satırlar gruplanacak ve aynı slaytlarda gösterilecektir.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section" id="positionSection" style="display:none;">
+                <div class="form-section-title">6. Konum Ayarları</div>
+                
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="showTab('single')">Tekli</button>
+                    <button class="tab-button" onclick="showTab('double')">Çiftli</button>
+                    <button class="tab-button" onclick="showTab('triple')">Üçlü</button>
+                </div>
+                
+                <div id="singleTab" class="tab-content active">
+                    <div class="config-section">
+                        <h4>Resim Konumu</h4>
+                        <div class="position-config">
+                            <div class="position-input">
+                                <label>Sol (inç):</label>
+                                <input type="number" id="single_image_left" value="1" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Üst (inç):</label>
+                                <input type="number" id="single_image_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Genişlik (inç):</label>
+                                <input type="number" id="single_image_width" value="8" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Yükseklik (inç):</label>
+                                <input type="number" id="single_image_height" value="6" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h4>Başlık Konumu</h4>
+                        <div class="position-config">
+                            <div class="position-input">
+                                <label>Sol (inç):</label>
+                                <input type="number" id="single_title_left" value="1" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Üst (inç):</label>
+                                <input type="number" id="single_title_top" value="1" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Genişlik (inç):</label>
+                                <input type="number" id="single_title_width" value="8" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Yükseklik (inç):</label>
+                                <input type="number" id="single_title_height" value="0.8" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Yazı Boyutu:</label>
+                                <input type="number" id="single_title_font" value="14" min="8" max="72" onchange="updatePreview()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h4>Etiket Konumları</h4>
+                        <div class="label-tabs" id="singleLabelTabs"></div>
+                        <div id="singleLabelTabsContent"></div>
+                    </div>
+                </div>
+                
+                <div id="doubleTab" class="tab-content">
+                    <div class="config-section">
+                        <h4>Resim Konumları</h4>
+                        <div class="position-config">
+                            <div class="position-input">
+                                <label>Resim 1 Sol:</label>
+                                <input type="number" id="double_image1_left" value="0.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Resim 1 Üst:</label>
+                                <input type="number" id="double_image1_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Resim 2 Sol:</label>
+                                <input type="number" id="double_image2_left" value="5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Resim 2 Üst:</label>
+                                <input type="number" id="double_image2_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Genişlik:</label>
+                                <input type="number" id="double_image_width" value="4" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Yükseklik:</label>
+                                <input type="number" id="double_image_height" value="3" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h4>Başlık Konumları</h4>
+                        <div class="position-config">
+                            <div class="position-input">
+                                <label>Başlık 1 Sol:</label>
+                                <input type="number" id="double_title1_left" value="0.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Başlık 1 Üst:</label>
+                                <input type="number" id="double_title1_top" value="1" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Başlık 2 Sol:</label>
+                                <input type="number" id="double_title2_left" value="5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Başlık 2 Üst:</label>
+                                <input type="number" id="double_title2_top" value="1" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Genişlik:</label>
+                                <input type="number" id="double_title_width" value="4" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Yükseklik (inç):</label>
+                                <input type="number" id="double_title_height" value="0.8" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Yazı Boyutu:</label>
+                                <input type="number" id="double_title_font" value="14" min="8" max="72" onchange="updatePreview()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h4>Etiket Konumları</h4>
+                        <div class="label-tabs" id="doubleLabelTabs"></div>
+                        <div id="doubleLabelTabsContent"></div>
+                    </div>
+                </div>
+                
+                <div id="tripleTab" class="tab-content">
+                    <div class="config-section">
+                        <h4>Resim Konumları</h4>
+                        <div class="position-config">
+                            <div class="position-input">
+                                <label>Resim 1 Sol:</label>
+                                <input type="number" id="triple_image1_left" value="0.3" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Resim 1 Üst:</label>
+                                <input type="number" id="triple_image1_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Resim 2 Sol:</label>
+                                <input type="number" id="triple_image2_left" value="3" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Resim 2 Üst:</label>
+                                <input type="number" id="triple_image2_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Resim 3 Sol:</label>
+                                <input type="number" id="triple_image3_left" value="5.7" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Resim 3 Üst:</label>
+                                <input type="number" id="triple_image3_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Genişlik:</label>
+                                <input type="number" id="triple_image_width" value="2.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Yükseklik:</label>
+                                <input type="number" id="triple_image_height" value="2" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h4>Başlık Konumları</h4>
+                        <div class="position-config">
+                            <div class="position-input">
+                                <label>Başlık 1 Sol:</label>
+                                <input type="number" id="triple_title1_left" value="0.3" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Başlık 1 Üst:</label>
+                                <input type="number" id="triple_title1_top" value="1" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Başlık 2 Sol:</label>
+                                <input type="number" id="triple_title2_left" value="3" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Başlık 2 Üst:</label>
+                                <input type="number" id="triple_title2_top" value="1" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Başlık 3 Sol:</label>
+                                <input type="number" id="triple_title3_left" value="5.7" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Başlık 3 Üst:</label>
+                                <input type="number" id="triple_title3_top" value="1" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Genişlik:</label>
+                                <input type="number" id="triple_title_width" value="2.5" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Yükseklik (inç):</label>
+                                <input type="number" id="triple_title_height" value="0.8" step="0.1" min="0" onchange="updatePreview()">
+                            </div>
+                            <div class="position-input">
+                                <label>Yazı Boyutu:</label>
+                                <input type="number" id="triple_title_font" value="12" min="8" max="72" onchange="updatePreview()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h4>Etiket Konumları</h4>
+                        <div class="label-tabs" id="tripleLabelTabs"></div>
+                        <div id="tripleLabelTabsContent"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="captionSection" style="display:none;">
+                <div class="form-section-title">7. Fotoğraf Başlığı (Excel'den)</div>
+                <div style="font-size: 13px; margin-bottom: 8px;">Başlık için sütun(ları) seçin (birden fazla seçebilirsiniz):</div>
+                <div id="captionColumnCheckboxes" class="checkbox-group"></div>
+                <div style="font-size: 12px; color: #666; margin-top: 6px;">
+                    Not: Burada seçim yaparsanız, "Sütun başlıklarını kullan" seçeneği yerine sadece hücre değeri başlık olarak yazılır.
+                </div>
+            </div>
+
+            <div class="section" id="labelSection" style="display:none;">
+                <div class="form-section-title">8. Etiket Seçenekleri</div>
+                <div class="label-count-selector">
+                    <label for="labelCount">Etiket Sayısı:</label>
+                    <select id="labelCount" onchange="changeLabelCount()">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </div>
+                <div style="font-size: 13px; margin-bottom: 8px;">Etiket İçin Sütunları Seçin:</div>
+                <div id="labelColumnCheckboxes" class="checkbox-group"></div>
+            </div>
+
+            <div class="section" id="fontSection" style="display:none;">
+                <div class="form-section-title">9. Yazı Tipi Ayarları</div>
+                <div class="config-section">
+                    <h4>Başlık (Title) Ayarları</h4>
+                    <div class="preview-control-item" style="margin-bottom: 10px;">
+                        <input type="checkbox" id="fontTitleBold" checked onchange="updatePreview()">
+                        <label for="fontTitleBold">Başlıkları Kalın Yap</label>
+                    </div>
+                    <div class="preview-control-item">
+                        <input type="checkbox" id="fontTitleWordWrap" checked onchange="updatePreview()">
+                        <label for="fontTitleWordWrap">Başlık Metnini Kaydır (Taşmayı Önle)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="themeSection" style="display:none;">
+                <div class="form-section-title">10. Tema / Arka Plan</div>
+                <div style="font-size: 13px; margin-bottom: 8px;">Yeni arka plan ekleyin veya kayıtlı birini seçin:</div>
+                <input type="file" id="bgImageInput" accept="image/png, image/jpeg, image/jpg" style="width: 100%;">
+                <div style="font-size: 11px; color: #666; margin-top: 4px;">(Önerilen boyut: 1920x1080px veya 16:9 oranında. Yüklenenler tarayıcıda saklanır.)</div>
+                <div class="bg-gallery-host" id="bgGalleryHost">
+                    <div class="bg-gallery-title">Kayıtlı arka planlar</div>
+                    <div id="bgGalleryEmpty" class="bg-gallery-empty">Henüz kayıtlı arka plan yok. Yukarıdan PNG veya JPEG yükleyin; burada kalıcı olarak listelenir.</div>
+                    <div class="bg-gallery-strip" id="bgGalleryStrip" style="display: none;"></div>
+                </div>
+                <div class="bg-controls" id="bgControls" style="display: none;">
+                    <button type="button" class="bg-remove-btn" onclick="removeBackground()">Seçimi kaldır (önizlemede arka plan yok)</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentFileData = null;
+        let positionConfig = { single: {}, double: {}, triple: {} };
+        let currentLabelCount = 1;
+        let columnPairs = [];
+        let currentBgImageData = null;
+        let savedBackgrounds = [];
+        const BG_STORAGE_KEY = 'pptSavedBackgrounds';
+        const BG_SELECTED_ID_KEY = 'pptSelectedBackgroundId';
+
+        function loadBackgroundsFromStorage() {
+            try {
+                const raw = localStorage.getItem(BG_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function persistBackgrounds() {
+            try {
+                localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(savedBackgrounds));
+                return true;
+            } catch (e) {
+                if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+                    alert('Tarayıcı depolama alanı doldu. Galeriden kullanmadığınız arka planları silin veya daha küçük resimler kullanın.');
+                } else {
+                    alert('Arka planlar kaydedilemedi: ' + (e.message || e));
+                }
+                return false;
+            }
+        }
+
+        function applyBackgroundToPreview(dataUrl) {
+            currentBgImageData = dataUrl || null;
+            const slide = document.getElementById('slidePreview');
+            if (dataUrl) {
+                slide.style.backgroundImage = `url('${dataUrl}')`;
+                document.getElementById('bgControls').style.display = 'flex';
+            } else {
+                slide.style.backgroundImage = '';
+                document.getElementById('bgControls').style.display = 'none';
+            }
+        }
+
+        function selectBackgroundById(id) {
+            const item = savedBackgrounds.find(function (x) { return x.id === id; });
+            if (!item) return;
+            localStorage.setItem(BG_SELECTED_ID_KEY, id);
+            applyBackgroundToPreview(item.data);
+            renderBackgroundGallery();
+        }
+
+        function renderBackgroundGallery() {
+            const strip = document.getElementById('bgGalleryStrip');
+            const emptyEl = document.getElementById('bgGalleryEmpty');
+            const selectedId = localStorage.getItem(BG_SELECTED_ID_KEY);
+            strip.innerHTML = '';
+            if (savedBackgrounds.length === 0) {
+                emptyEl.style.display = 'block';
+                strip.style.display = 'none';
+                return;
+            }
+            emptyEl.style.display = 'none';
+            strip.style.display = 'flex';
+            savedBackgrounds.forEach(function (item) {
+                const wrap = document.createElement('div');
+                wrap.className = 'bg-gallery-item' + (selectedId === item.id && currentBgImageData ? ' selected' : '');
+                wrap.title = item.name || 'Arka plan';
+                wrap.onclick = function (ev) {
+                    if (ev.target.closest && ev.target.closest('.bg-gallery-delete')) return;
+                    selectBackgroundById(item.id);
+                };
+                const img = document.createElement('img');
+                img.src = item.data;
+                img.alt = '';
+                const del = document.createElement('button');
+                del.type = 'button';
+                del.className = 'bg-gallery-delete';
+                del.setAttribute('aria-label', 'Galeriden sil');
+                del.innerHTML = '&times;';
+                del.onclick = function (ev) {
+                    ev.stopPropagation();
+                    deleteBackgroundFromGallery(item.id);
+                };
+                const cap = document.createElement('div');
+                cap.className = 'bg-gallery-name';
+                cap.textContent = item.name || 'Arka plan';
+                wrap.appendChild(del);
+                wrap.appendChild(img);
+                wrap.appendChild(cap);
+                strip.appendChild(wrap);
+            });
+        }
+
+        function deleteBackgroundFromGallery(id) {
+            const wasSelected = localStorage.getItem(BG_SELECTED_ID_KEY) === id;
+            savedBackgrounds = savedBackgrounds.filter(function (x) { return x.id !== id; });
+            persistBackgrounds();
+            if (wasSelected) {
+                localStorage.removeItem(BG_SELECTED_ID_KEY);
+                if (savedBackgrounds.length > 0) {
+                    selectBackgroundById(savedBackgrounds[0].id);
+                } else {
+                    applyBackgroundToPreview(null);
+                    document.getElementById('bgImageInput').value = '';
+                    renderBackgroundGallery();
+                }
+            } else {
+                renderBackgroundGallery();
+            }
+        }
+
+        function initBackgroundGallery() {
+            savedBackgrounds = loadBackgroundsFromStorage();
+            const selectedId = localStorage.getItem(BG_SELECTED_ID_KEY);
+            if (selectedId) {
+                const item = savedBackgrounds.find(function (x) { return x.id === selectedId; });
+                if (item) {
+                    applyBackgroundToPreview(item.data);
+                } else {
+                    localStorage.removeItem(BG_SELECTED_ID_KEY);
+                    applyBackgroundToPreview(null);
+                }
+            } else {
+                applyBackgroundToPreview(null);
+            }
+            renderBackgroundGallery();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDefaultConfig();
+            initBackgroundGallery();
+            showWelcomeScreen();
+            
+            document.getElementById('bgImageInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const data = reader.result;
+                    const id = 'bg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+                    const entry = { id: id, name: file.name, data: data };
+                    savedBackgrounds = loadBackgroundsFromStorage();
+                    savedBackgrounds.push(entry);
+                    if (!persistBackgrounds()) {
+                        savedBackgrounds.pop();
+                        return;
+                    }
+                    selectBackgroundById(id);
+                    e.target.value = '';
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        function removeBackground() {
+            localStorage.removeItem(BG_SELECTED_ID_KEY);
+            applyBackgroundToPreview(null);
+            document.getElementById('bgImageInput').value = '';
+            renderBackgroundGallery();
+        }
+
+        function showWelcomeScreen() {
+            document.getElementById('welcomeScreen').style.display = 'flex';
+            document.getElementById('previewContainer').classList.remove('visible');
+        }
+        
+        function showNormalPreview() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('previewContainer').classList.add('visible');
+            document.getElementById('previewControls').style.display = 'block';
+        }
+        
+        function loadDefaultConfig() {
+            const savedConfig = localStorage.getItem('positionConfig');
+            if (savedConfig) positionConfig = JSON.parse(savedConfig);
+            
+            const savedLabelCount = localStorage.getItem('labelCount');
+            if (savedLabelCount) {
+                currentLabelCount = parseInt(savedLabelCount);
+                document.getElementById('labelCount').value = currentLabelCount;
+            }
+            
+            const savedSkipEmptyRows = localStorage.getItem('skipEmptyRows');
+            if (savedSkipEmptyRows) document.getElementById('previewSkipEmptyRows').checked = savedSkipEmptyRows === 'true';
+            
+            applySavedConfig();
+        }
+        
+        function applySavedConfig() {
+            if (positionConfig.single.image) {
+                document.getElementById('single_image_left').value = positionConfig.single.image.left || 1;
+                document.getElementById('single_image_top').value = positionConfig.single.image.top || 1.5;
+                document.getElementById('single_image_width').value = positionConfig.single.image.width || 8;
+                document.getElementById('single_image_height').value = positionConfig.single.image.height || 6;
+            }
+            if (positionConfig.single.title) {
+                document.getElementById('single_title_left').value = positionConfig.single.title.left || 1;
+                document.getElementById('single_title_top').value = positionConfig.single.title.top || 1;
+                document.getElementById('single_title_width').value = positionConfig.single.title.width || 8;
+                document.getElementById('single_title_height').value = positionConfig.single.title.height || 0.8;
+                document.getElementById('single_title_font').value = positionConfig.single.title.fontSize || 14;
+            }
+            if (positionConfig.double.image1) {
+                document.getElementById('double_image1_left').value = positionConfig.double.image1.left || 0.5;
+                document.getElementById('double_image1_top').value = positionConfig.double.image1.top || 1.5;
+            }
+            if (positionConfig.double.image2) {
+                document.getElementById('double_image2_left').value = positionConfig.double.image2.left || 5;
+                document.getElementById('double_image2_top').value = positionConfig.double.image2.top || 1.5;
+            }
+            if (positionConfig.double.image1) {
+                document.getElementById('double_image_width').value = positionConfig.double.image1.width || 4;
+                document.getElementById('double_image_height').value = positionConfig.double.image1.height || 3;
+            }
+            if (positionConfig.double.title1) {
+                document.getElementById('double_title1_left').value = positionConfig.double.title1.left || 0.5;
+                document.getElementById('double_title1_top').value = positionConfig.double.title1.top || 1;
+            }
+            if (positionConfig.double.title2) {
+                document.getElementById('double_title2_left').value = positionConfig.double.title2.left || 5;
+                document.getElementById('double_title2_top').value = positionConfig.double.title2.top || 1;
+            }
+            if (positionConfig.double.title1) {
+                document.getElementById('double_title_width').value = positionConfig.double.title1.width || 4;
+                document.getElementById('double_title_height').value = positionConfig.double.title1.height || 0.8;
+                document.getElementById('double_title_font').value = positionConfig.double.title1.fontSize || 14;
+            }
+            if (positionConfig.triple.image1) {
+                document.getElementById('triple_image1_left').value = positionConfig.triple.image1.left || 0.3;
+                document.getElementById('triple_image1_top').value = positionConfig.triple.image1.top || 1.5;
+            }
+            if (positionConfig.triple.image2) {
+                document.getElementById('triple_image2_left').value = positionConfig.triple.image2.left || 3;
+                document.getElementById('triple_image2_top').value = positionConfig.triple.image2.top || 1.5;
+            }
+            if (positionConfig.triple.image3) {
+                document.getElementById('triple_image3_left').value = positionConfig.triple.image3.left || 5.7;
+                document.getElementById('triple_image3_top').value = positionConfig.triple.image3.top || 1.5;
+            }
+            if (positionConfig.triple.image1) {
+                document.getElementById('triple_image_width').value = positionConfig.triple.image1.width || 2.5;
+                document.getElementById('triple_image_height').value = positionConfig.triple.image1.height || 2;
+            }
+            if (positionConfig.triple.title1) {
+                document.getElementById('triple_title1_left').value = positionConfig.triple.title1.left || 0.3;
+                document.getElementById('triple_title1_top').value = positionConfig.triple.title1.top || 1;
+            }
+            if (positionConfig.triple.title2) {
+                document.getElementById('triple_title2_left').value = positionConfig.triple.title2.left || 3;
+                document.getElementById('triple_title2_top').value = positionConfig.triple.title2.top || 1;
+            }
+            if (positionConfig.triple.title3) {
+                document.getElementById('triple_title3_left').value = positionConfig.triple.title3.left || 5.7;
+                document.getElementById('triple_title3_top').value = positionConfig.triple.title3.top || 1;
+            }
+            if (positionConfig.triple.title1) {
+                document.getElementById('triple_title_width').value = positionConfig.triple.title1.width || 2.5;
+                document.getElementById('triple_title_height').value = positionConfig.triple.title1.height || 0.8;
+                document.getElementById('triple_title_font').value = positionConfig.triple.title1.fontSize || 12;
+            }
+            updateLabelTabs();
+        }
+        
+        function saveConfig() {
+            const type = document.getElementById('presentationType').value;
+            const labelCount = parseInt(document.getElementById('labelCount').value);
+            localStorage.setItem('labelCount', labelCount);
+            const skipEmptyRows = document.getElementById('previewSkipEmptyRows').checked;
+            localStorage.setItem('skipEmptyRows', skipEmptyRows);
+
+            if (!positionConfig.single) positionConfig.single = {};
+            if (!positionConfig.double) positionConfig.double = {};
+            if (!positionConfig.triple) positionConfig.triple = {};
+            
+            if (type === 'single') {
+                positionConfig.single.image = {
+                    left: parseFloat(document.getElementById('single_image_left').value),
+                    top: parseFloat(document.getElementById('single_image_top').value),
+                    width: parseFloat(document.getElementById('single_image_width').value),
+                    height: parseFloat(document.getElementById('single_image_height').value)
+                };
+                positionConfig.single.title = {
+                    left: parseFloat(document.getElementById('single_title_left').value),
+                    top: parseFloat(document.getElementById('single_title_top').value),
+                    width: parseFloat(document.getElementById('single_title_width').value),
+                    height: parseFloat(document.getElementById('single_title_height').value),
+                    fontSize: parseInt(document.getElementById('single_title_font').value)
+                };
+                for (let i = 1; i <= labelCount; i++) {
+                    positionConfig.single[`label${i}`] = {
+                        left: parseFloat(document.getElementById(`single_label${i}_left`).value),
+                        top: parseFloat(document.getElementById(`single_label${i}_top`).value),
+                        width: parseFloat(document.getElementById(`single_label${i}_width`).value),
+                        height: parseFloat(document.getElementById(`single_label${i}_height`).value),
+                        fontSize: parseInt(document.getElementById(`single_label${i}_font`).value)
+                    };
+                }
+            } else if (type === 'double') {
+                positionConfig.double.image1 = {
+                    left: parseFloat(document.getElementById('double_image1_left').value),
+                    top: parseFloat(document.getElementById('double_image1_top').value),
+                    width: parseFloat(document.getElementById('double_image_width').value),
+                    height: parseFloat(document.getElementById('double_image_height').value)
+                };
+                positionConfig.double.image2 = {
+                    left: parseFloat(document.getElementById('double_image2_left').value),
+                    top: parseFloat(document.getElementById('double_image2_top').value),
+                    width: parseFloat(document.getElementById('double_image_width').value),
+                    height: parseFloat(document.getElementById('double_image_height').value)
+                };
+                positionConfig.double.title1 = {
+                    left: parseFloat(document.getElementById('double_title1_left').value),
+                    top: parseFloat(document.getElementById('double_title1_top').value),
+                    width: parseFloat(document.getElementById('double_title_width').value),
+                    height: parseFloat(document.getElementById('double_title_height').value),
+                    fontSize: parseInt(document.getElementById('double_title_font').value)
+                };
+                positionConfig.double.title2 = {
+                    left: parseFloat(document.getElementById('double_title2_left').value),
+                    top: parseFloat(document.getElementById('double_title2_top').value),
+                    width: parseFloat(document.getElementById('double_title_width').value),
+                    height: parseFloat(document.getElementById('double_title_height').value),
+                    fontSize: parseInt(document.getElementById('double_title_font').value)
+                };
+                for (let i = 1; i <= labelCount; i++) {
+                    positionConfig.double[`label${i}`] = {
+                        left: parseFloat(document.getElementById(`double_label${i}_left`).value),
+                        top: parseFloat(document.getElementById(`double_label${i}_top`).value),
+                        width: parseFloat(document.getElementById(`double_label${i}_width`).value),
+                        height: parseFloat(document.getElementById(`double_label${i}_height`).value),
+                        fontSize: parseInt(document.getElementById(`double_label${i}_font`).value)
+                    };
+                }
+            } else if (type === 'triple') {
+                positionConfig.triple.image1 = {
+                    left: parseFloat(document.getElementById('triple_image1_left').value),
+                    top: parseFloat(document.getElementById('triple_image1_top').value),
+                    width: parseFloat(document.getElementById('triple_image_width').value),
+                    height: parseFloat(document.getElementById('triple_image_height').value)
+                };
+                positionConfig.triple.image2 = {
+                    left: parseFloat(document.getElementById('triple_image2_left').value),
+                    top: parseFloat(document.getElementById('triple_image2_top').value),
+                    width: parseFloat(document.getElementById('triple_image_width').value),
+                    height: parseFloat(document.getElementById('triple_image_height').value)
+                };
+                positionConfig.triple.image3 = {
+                    left: parseFloat(document.getElementById('triple_image3_left').value),
+                    top: parseFloat(document.getElementById('triple_image3_top').value),
+                    width: parseFloat(document.getElementById('triple_image_width').value),
+                    height: parseFloat(document.getElementById('triple_image_height').value)
+                };
+                positionConfig.triple.title1 = {
+                    left: parseFloat(document.getElementById('triple_title1_left').value),
+                    top: parseFloat(document.getElementById('triple_title1_top').value),
+                    width: parseFloat(document.getElementById('triple_title_width').value),
+                    height: parseFloat(document.getElementById('triple_title_height').value),
+                    fontSize: parseInt(document.getElementById('triple_title_font').value)
+                };
+                positionConfig.triple.title2 = {
+                    left: parseFloat(document.getElementById('triple_title2_left').value),
+                    top: parseFloat(document.getElementById('triple_title2_top').value),
+                    width: parseFloat(document.getElementById('triple_title_width').value),
+                    height: parseFloat(document.getElementById('triple_title_height').value),
+                    fontSize: parseInt(document.getElementById('triple_title_font').value)
+                };
+                positionConfig.triple.title3 = {
+                    left: parseFloat(document.getElementById('triple_title3_left').value),
+                    top: parseFloat(document.getElementById('triple_title3_top').value),
+                    width: parseFloat(document.getElementById('triple_title_width').value),
+                    height: parseFloat(document.getElementById('triple_title_height').value),
+                    fontSize: parseInt(document.getElementById('triple_title_font').value)
+                };
+                for (let i = 1; i <= labelCount; i++) {
+                    positionConfig.triple[`label${i}`] = {
+                        left: parseFloat(document.getElementById(`triple_label${i}_left`).value),
+                        top: parseFloat(document.getElementById(`triple_label${i}_top`).value),
+                        width: parseFloat(document.getElementById(`triple_label${i}_width`).value),
+                        height: parseFloat(document.getElementById(`triple_label${i}_height`).value),
+                        fontSize: parseInt(document.getElementById(`triple_label${i}_font`).value)
+                    };
+                }
+            }
+            localStorage.setItem('positionConfig', JSON.stringify(positionConfig));
+        }
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            document.getElementById('presentationType').value = tabName;
+            
+            const tripleOptions = document.getElementById('tripleOptions');
+            if (tabName === 'triple') tripleOptions.style.display = 'block';
+            else tripleOptions.style.display = 'none';
+            
+            if (tabName === 'double') {
+                document.getElementById('columnPairingSection').style.display = 'block';
+                if (columnPairs.length === 0) initializeColumnPairs();
+            } else {
+                document.getElementById('columnPairingSection').style.display = 'none';
+            }
+            
+            updateLabelTabs();
+            updatePreview();
+        }
+        
+        function updateLabelTabs() {
+            const labelCount = parseInt(document.getElementById('labelCount').value);
+            const presentationTypes = ['single', 'double', 'triple'];
+            
+            presentationTypes.forEach(type => {
+                const tabsContainer = document.getElementById(`${type}LabelTabs`);
+                const contentContainer = document.getElementById(`${type}LabelTabsContent`);
+                if (!tabsContainer || !contentContainer) return;
+                
+                tabsContainer.innerHTML = '';
+                contentContainer.innerHTML = '';
+                
+                for (let i = 1; i <= labelCount; i++) {
+                    const tabButton = document.createElement('button');
+                    tabButton.className = i === 1 ? 'label-tab active' : 'label-tab';
+                    tabButton.textContent = `Etiket ${i}`;
+                    tabButton.onclick = () => showLabelTab(type, i);
+                    tabsContainer.appendChild(tabButton);
+                    
+                    const tabContent = document.createElement('div');
+                    tabContent.id = `${type}_label${i}Tab`;
+                    tabContent.className = i === 1 ? 'label-tab-content active' : 'label-tab-content';
+                    
+                    const positionConfigHTML = `
+                        <div class="position-config">
+                            <div class="position-input"><label>Sol (inç):</label><input type="number" id="${type}_label${i}_left" value="${getLabelDefaultValue(type, i, 'left')}" step="0.1" min="0" onchange="updatePreview()"></div>
+                            <div class="position-input"><label>Üst (inç):</label><input type="number" id="${type}_label${i}_top" value="${getLabelDefaultValue(type, i, 'top')}" step="0.1" min="0" onchange="updatePreview()"></div>
+                            <div class="position-input"><label>Genişlik (inç):</label><input type="number" id="${type}_label${i}_width" value="${getLabelDefaultValue(type, i, 'width')}" step="0.1" min="0" onchange="updatePreview()"></div>
+                            <div class="position-input"><label>Yükseklik (inç):</label><input type="number" id="${type}_label${i}_height" value="${getLabelDefaultValue(type, i, 'height')}" step="0.1" min="0" onchange="updatePreview()"></div>
+                            <div class="position-input"><label>Yazı Boyutu:</label><input type="number" id="${type}_label${i}_font" value="${getLabelDefaultValue(type, i, 'fontSize')}" min="8" max="72" onchange="updatePreview()"></div>
+                        </div>
+                    `;
+                    tabContent.innerHTML = positionConfigHTML;
+                    contentContainer.appendChild(tabContent);
+                }
+            });
+            applySavedLabelConfig();
+        }
+        
+        function getLabelDefaultValue(presentationType, labelIndex, property) {
+            const defaultValues = {
+                single: {
+                    1: { left: 1, top: 7.5, width: 8, height: 0.8, fontSize: 12 },
+                    2: { left: 1, top: 8.3, width: 8, height: 0.8, fontSize: 12 },
+                    3: { left: 1, top: 9.1, width: 8, height: 0.8, fontSize: 12 }
+                },
+                double: {
+                    1: { left: 1, top: 5, width: 8, height: 0.8, fontSize: 12 },
+                    2: { left: 1, top: 5.8, width: 8, height: 0.8, fontSize: 12 },
+                    3: { left: 1, top: 6.6, width: 8, height: 0.8, fontSize: 12 }
+                },
+                triple: {
+                    1: { left: 1, top: 4, width: 8, height: 0.8, fontSize: 12 },
+                    2: { left: 1, top: 4.8, width: 8, height: 0.8, fontSize: 12 },
+                    3: { left: 1, top: 5.6, width: 8, height: 0.8, fontSize: 12 }
+                }
+            };
+            const savedConfig = positionConfig[presentationType];
+            if (savedConfig && savedConfig[`label${labelIndex}`] && savedConfig[`label${labelIndex}`][property] !== undefined) {
+                return savedConfig[`label${labelIndex}`][property];
+            }
+            return defaultValues[presentationType][labelIndex][property];
+        }
+        
+        function applySavedLabelConfig() {
+            const labelCount = parseInt(document.getElementById('labelCount').value);
+            const presentationTypes = ['single', 'double', 'triple'];
+            presentationTypes.forEach(type => {
+                for (let i = 1; i <= labelCount; i++) {
+                    const labelConfig = positionConfig[type][`label${i}`];
+                    if (labelConfig) {
+                        const ids = ['left', 'top', 'width', 'height', 'font'];
+                        ids.forEach(id => {
+                            const el = document.getElementById(`${type}_label${i}_${id}`);
+                            if (el) el.value = (id === 'font') ? labelConfig.fontSize : labelConfig[id];
+                        });
+                    }
+                }
+            });
+        }
+        
+        function showLabelTab(presentationType, labelNumber) {
+            const container = document.getElementById(presentationType + 'Tab');
+            container.querySelectorAll('.label-tab').forEach((btn, index) => btn.classList.toggle('active', index === labelNumber - 1));
+            container.querySelectorAll('.label-tab-content').forEach((content, index) => content.classList.toggle('active', index === labelNumber - 1));
+            updatePreview();
+        }
+        
+        function changeLabelCount() {
+            currentLabelCount = parseInt(document.getElementById('labelCount').value);
+            updateLabelTabs();
+            updatePreview();
+        }
+        
+        function updateGroupingColumnOptions() {
+            const groupingColumnSelect = document.getElementById('groupingColumn');
+            groupingColumnSelect.innerHTML = '<option value="">-- Gruplama sütunu seçin --</option>';
+            if (!currentFileData) return;
+            const selectedSheets = getSelectedSheets();
+            if (selectedSheets.length === 0) return;
+            const firstSheet = selectedSheets[0];
+            const columns = currentFileData.sheets_data[firstSheet];
+            columns.forEach(column => {
+                const option = document.createElement('option');
+                option.value = column;
+                option.textContent = column;
+                groupingColumnSelect.appendChild(option);
+            });
+        }
+        
+        function changePresentationType() {
+            const type = document.getElementById('presentationType').value;
+            showTab(type);
+            updatePreview();
+        }
+        
+        function addColumnPair() {
+            const pairsContainer = document.getElementById('columnPairsContainer');
+            const pairIndex = columnPairs.length + 1;
+            const pairDiv = document.createElement('div');
+            pairDiv.className = 'column-pair';
+            pairDiv.innerHTML = `
+                <div class="pair-number">${pairIndex}.</div>
+                <select id="pair_${pairIndex}_col1" onchange="updatePreview()"><option value="">-- İlk sütun --</option></select>
+                <select id="pair_${pairIndex}_col2" onchange="updatePreview()"><option value="">-- İkinci sütun --</option></select>
+                <button type="button" class="remove-pair-btn" onclick="removeColumnPair(${pairIndex})">×</button>
+            `;
+            pairsContainer.appendChild(pairDiv);
+            columnPairs.push({ col1: '', col2: '' });
+            updateColumnPairOptions();
+            updatePreview();
+        }
+        
+        function removeColumnPair(index) {
+            const pairElement = document.querySelector(`#columnPairsContainer .column-pair:nth-child(${index})`);
+            if (pairElement) {
+                pairElement.remove();
+                columnPairs.splice(index - 1, 1);
+                const remainingPairs = document.querySelectorAll('#columnPairsContainer .column-pair');
+                remainingPairs.forEach((pair, i) => { pair.querySelector('.pair-number').textContent = `${i + 1}.`; });
+                updatePreview();
+            }
+        }
+        
+        function updateColumnPairOptions() {
+            if (!currentFileData) return;
+            const selectedSheets = getSelectedSheets();
+            if (selectedSheets.length === 0) return;
+            const firstSheet = selectedSheets[0];
+            const columns = currentFileData.sheets_data[firstSheet];
+            const pairSelects = document.querySelectorAll('#columnPairsContainer select');
+            pairSelects.forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">-- Sütun seçin --</option>';
+                columns.forEach(column => {
+                    const option = document.createElement('option');
+                    option.value = column;
+                    option.textContent = column;
+                    if (column === currentValue) option.selected = true;
+                    select.appendChild(option);
+                });
+            });
+        }
+        
+        function initializeColumnPairs() {
+            const pairsContainer = document.getElementById('columnPairsContainer');
+            pairsContainer.innerHTML = '';
+            columnPairs = [];
+            addColumnPair();
+            addColumnPair();
+        }
+        
+        function getColumnPairs() {
+            const pairs = [];
+            const pairElements = document.querySelectorAll('#columnPairsContainer .column-pair');
+            pairElements.forEach((pairElement, index) => {
+                const pairIndex = index + 1;
+                const col1 = document.getElementById(`pair_${pairIndex}_col1`).value;
+                const col2 = document.getElementById(`pair_${pairIndex}_col2`).value;
+                if (col1 && col2) pairs.push({ col1, col2 });
+            });
+            return pairs;
+        }
+        
+        function uploadFile() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+            const uploadStatus = document.getElementById('uploadStatus');
+            if (!file) { uploadStatus.innerHTML = '<div class="error">Lütfen bir Excel dosyası seçin</div>'; return; }
+            const formData = new FormData();
+            formData.append('file', file);
+            uploadStatus.innerHTML = '<div>Dosya yükleniyor...</div>';
+            
+            fetch('/upload', { method: 'POST', body: formData })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+                        return null;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                if (data.error) {
+                    uploadStatus.innerHTML = `<div class="error">Hata: ${data.error}</div>`;
+                } else {
+                    currentFileData = data;
+                    uploadStatus.innerHTML = `<div class="success">Dosya başarıyla yüklendi: ${data.filename}</div>`;
+                    showSheetSelection(data.sheets);
+                    document.getElementById('sheetSection').style.display = 'block';
+                    document.getElementById('presentationTypeSection').style.display = 'block';
+                    document.getElementById('columnSection').style.display = 'block';
+                    document.getElementById('groupingSection').style.display = 'block';
+                    document.getElementById('positionSection').style.display = 'block';
+                    document.getElementById('captionSection').style.display = 'block';
+                    document.getElementById('labelSection').style.display = 'block';
+                    document.getElementById('fontSection').style.display = 'block';
+                    document.getElementById('themeSection').style.display = 'block';
+                    showNormalPreview();
+                    updatePreview();
+                }
+            })
+            .catch(error => { console.error('Error:', error); uploadStatus.innerHTML = '<div class="error">Dosya yüklenirken hata oluştu</div>'; });
+        }
+        
+        function showSheetSelection(sheets) {
+            const container = document.getElementById('sheetCheckboxes');
+            container.innerHTML = '';
+            sheets.forEach(sheet => {
+                const div = document.createElement('div');
+                div.innerHTML = `<input type="checkbox" id="sheet_${sheet}" value="${sheet}" onchange="handleSheetSelection()"><label for="sheet_${sheet}">${sheet}</label>`;
+                container.appendChild(div);
+            });
+        }
+        
+        function handleSheetSelection() {
+            const selectedSheets = getSelectedSheets();
+            if (selectedSheets.length === 0) {
+                document.getElementById('columnSection').style.display = 'none';
+                document.getElementById('groupingSection').style.display = 'none';
+                document.getElementById('captionSection').style.display = 'none';
+                document.getElementById('labelSection').style.display = 'none';
+                document.getElementById('fontSection').style.display = 'none';
+                document.getElementById('themeSection').style.display = 'none';
+            } else {
+                showColumnSelection();
+                document.getElementById('groupingSection').style.display = 'block';
+                document.getElementById('captionSection').style.display = 'block';
+                document.getElementById('labelSection').style.display = 'block';
+                document.getElementById('fontSection').style.display = 'block';
+                document.getElementById('themeSection').style.display = 'block';
+            }
+        }
+        
+        function showColumnSelection() {
+            const selectedSheets = getSelectedSheets();
+            if (selectedSheets.length === 0) { document.getElementById('columnSection').style.display = 'none'; return; }
+            document.getElementById('columnSection').style.display = 'block';
+            const container = document.getElementById('columnCheckboxes');
+            container.innerHTML = '';
+            const firstSheet = selectedSheets[0];
+            const columns = currentFileData.sheets_data[firstSheet];
+            columns.forEach(column => {
+                const div = document.createElement('div');
+                div.innerHTML = `<input type="checkbox" id="col_${column}" value="${column}" onchange="updateColumnSelection()"><label for="col_${column}">${column}</label>`;
+                container.appendChild(div);
+            });
+            const labelContainer = document.getElementById('labelColumnCheckboxes');
+            labelContainer.innerHTML = '';
+            columns.forEach(column => {
+                const div = document.createElement('div');
+                div.innerHTML = `<input type="checkbox" id="label_col_${column}" value="${column}" onchange="updatePreview()"><label for="label_col_${column}">${column}</label>`;
+                labelContainer.appendChild(div);
+            });
+            const captionContainer = document.getElementById('captionColumnCheckboxes');
+            captionContainer.innerHTML = '';
+            columns.forEach(column => {
+                const div = document.createElement('div');
+                div.innerHTML = `<input type="checkbox" id="caption_col_${column}" value="${column}" onchange="updatePreview()"><label for="caption_col_${column}">${column}</label>`;
+                captionContainer.appendChild(div);
+            });
+            updateGroupingColumnOptions();
+            updateColumnPairOptions();
+            updatePreview();
+        }
+        
+        function updateColumnSelection() { updatePreview(); }
+        
+        function updatePreview() {
+            if (!currentFileData) return;
+            saveConfig();
+            
+            const previewSlide = document.getElementById('previewSlide');
+            const presentationType = document.getElementById('presentationType').value;
+            const useColumnTitles = document.getElementById('previewUseColumnTitles').checked;
+            const addLabelBorder = document.getElementById('previewAddLabelBorder').checked;
+            const labelCount = parseInt(document.getElementById('labelCount').value);
+            const skipSingleImages = document.getElementById('previewSkipSingleImages').checked;
+            const fontTitleBold = document.getElementById('fontTitleBold').checked;
+            const fontTitleWordWrap = document.getElementById('fontTitleWordWrap').checked;
+            const captionColumns = getSelectedCaptionColumns();
+            
+            previewSlide.innerHTML = '';
+            const inchesToPixels = 80;
+
+            if (presentationType === 'single') {
+                const config = positionConfig.single;
+                const selectedColumns = getSelectedColumns();
+                if (config.image && selectedColumns.length > 0) {
+                    const imageDiv = document.createElement('div');
+                    imageDiv.className = 'preview-image';
+                    imageDiv.style.left = (config.image.left * inchesToPixels) + 'px';
+                    imageDiv.style.top = (config.image.top * inchesToPixels) + 'px';
+                    imageDiv.style.width = (config.image.width * inchesToPixels) + 'px';
+                    imageDiv.style.height = (config.image.height * inchesToPixels) + 'px';
+                    const sampleImage = document.createElement('div');
+                    sampleImage.className = 'sample-image';
+                    sampleImage.textContent = 'Örnek Resim';
+                    imageDiv.appendChild(sampleImage);
+                    previewSlide.appendChild(imageDiv);
+                }
+                if (config.title && ((useColumnTitles && selectedColumns.length > 0) || captionColumns.length > 0)) {
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'preview-title';
+                    titleDiv.style.left = (config.title.left * inchesToPixels) + 'px';
+                    titleDiv.style.top = (config.title.top * inchesToPixels) + 'px';
+                    titleDiv.style.width = (config.title.width * inchesToPixels) + 'px';
+                    titleDiv.style.height = (config.title.height * inchesToPixels) + 'px';
+                    if (captionColumns.length > 0) {
+                        titleDiv.textContent = captionColumns.map(() => `Örnek Değer`).join('\n');
+                    } else {
+                        titleDiv.textContent = selectedColumns[0];
+                    }
+                    titleDiv.style.fontSize = (config.title.fontSize || 12) + 'px';
+                    titleDiv.style.fontWeight = fontTitleBold ? 'bold' : 'normal';
+                    titleDiv.classList.toggle('wrap', fontTitleWordWrap);
+                    titleDiv.classList.toggle('normal', !fontTitleWordWrap);
+                    previewSlide.appendChild(titleDiv);
+                }
+                const labelColumns = getSelectedLabelColumns();
+                if (labelColumns.length > 0) {
+                    for (let i = 1; i <= labelCount; i++) {
+                        const labelConfig = config[`label${i}`];
+                        if (labelConfig) {
+                            const labelDiv = document.createElement('div');
+                            labelDiv.className = 'preview-label';
+                            if (addLabelBorder) labelDiv.classList.add('with-border');
+                            labelDiv.style.left = (labelConfig.left * inchesToPixels) + 'px';
+                            labelDiv.style.top = (labelConfig.top * inchesToPixels) + 'px';
+                            labelDiv.style.width = (labelConfig.width * inchesToPixels) + 'px';
+                            labelDiv.style.height = (labelConfig.height * inchesToPixels) + 'px';
+                            labelDiv.style.fontSize = (labelConfig.fontSize || 12) + 'px';
+                            let labelHTML = '<div class="sample-content">';
+                            labelColumns.forEach(col => { labelHTML += `<div><span class="label-bold">${col}:</span> Örnek Değer</div>`; });
+                            labelHTML += '</div>';
+                            labelDiv.innerHTML = labelHTML;
+                            previewSlide.appendChild(labelDiv);
+                        }
+                    }
+                }
+            } else if (presentationType === 'double') {
+                const config = positionConfig.double;
+                const columnPairs = getColumnPairs();
+                if (columnPairs.length > 0) {
+                    columnPairs.forEach((pair) => {
+                        const image1Div = document.createElement('div'); image1Div.className = 'preview-image';
+                        image1Div.style.left = (config.image1.left * inchesToPixels) + 'px'; image1Div.style.top = (config.image1.top * inchesToPixels) + 'px';
+                        image1Div.style.width = (config.image1.width * inchesToPixels) + 'px'; image1Div.style.height = (config.image1.height * inchesToPixels) + 'px';
+                        const sampleImage1 = document.createElement('div'); sampleImage1.className = 'sample-image'; sampleImage1.textContent = pair.col1 || 'Resim 1';
+                        image1Div.appendChild(sampleImage1); previewSlide.appendChild(image1Div);
+                        
+                        const image2Div = document.createElement('div'); image2Div.className = 'preview-image';
+                        image2Div.style.left = (config.image2.left * inchesToPixels) + 'px'; image2Div.style.top = (config.image2.top * inchesToPixels) + 'px';
+                        image2Div.style.width = (config.image2.width * inchesToPixels) + 'px'; image2Div.style.height = (config.image2.height * inchesToPixels) + 'px';
+                        const sampleImage2 = document.createElement('div'); sampleImage2.className = 'sample-image'; sampleImage2.textContent = pair.col2 || 'Resim 2';
+                        image2Div.appendChild(sampleImage2); previewSlide.appendChild(image2Div);
+                    });
+                } else {
+                    const selectedColumns = getSelectedColumns();
+                    if (config.image1 && config.image2) {
+                        const image1Div = document.createElement('div'); image1Div.className = 'preview-image';
+                        image1Div.style.left = (config.image1.left * inchesToPixels) + 'px'; image1Div.style.top = (config.image1.top * inchesToPixels) + 'px';
+                        image1Div.style.width = (config.image1.width * inchesToPixels) + 'px'; image1Div.style.height = (config.image1.height * inchesToPixels) + 'px';
+                        const sampleImage1 = document.createElement('div'); sampleImage1.className = 'sample-image'; sampleImage1.textContent = selectedColumns[0] || 'Resim 1';
+                        image1Div.appendChild(sampleImage1); previewSlide.appendChild(image1Div);
+                        
+                        const image2Div = document.createElement('div'); image2Div.className = 'preview-image';
+                        image2Div.style.left = (config.image2.left * inchesToPixels) + 'px'; image2Div.style.top = (config.image2.top * inchesToPixels) + 'px';
+                        image2Div.style.width = (config.image2.width * inchesToPixels) + 'px'; image2Div.style.height = (config.image2.height * inchesToPixels) + 'px';
+                        const sampleImage2 = document.createElement('div'); sampleImage2.className = 'sample-image'; sampleImage2.textContent = selectedColumns[1] || 'Resim 2';
+                        image2Div.appendChild(sampleImage2); previewSlide.appendChild(image2Div);
+                    }
+                }
+                
+                if (useColumnTitles || captionColumns.length > 0) {
+                    const columnPairs = getColumnPairs();
+                    const selectedColumns = getSelectedColumns();
+                    if (config.title1) {
+                        const title1Div = document.createElement('div'); title1Div.className = 'preview-title';
+                        title1Div.style.left = (config.title1.left * inchesToPixels) + 'px'; title1Div.style.top = (config.title1.top * inchesToPixels) + 'px';
+                        title1Div.style.width = (config.title1.width * inchesToPixels) + 'px'; title1Div.style.height = (config.title1.height * inchesToPixels) + 'px';
+                        if (captionColumns.length > 0) title1Div.textContent = captionColumns.map(() => `Örnek Değer`).join('\n');
+                        else if (columnPairs.length > 0) title1Div.textContent = columnPairs[0].col1;
+                        else if (selectedColumns.length > 0) title1Div.textContent = selectedColumns[0];
+                        else title1Div.textContent = 'Başlık 1';
+                        title1Div.style.fontSize = (config.title1.fontSize || 12) + 'px';
+                        title1Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title1Div.classList.toggle('wrap', fontTitleWordWrap); title1Div.classList.toggle('normal', !fontTitleWordWrap);
+                        previewSlide.appendChild(title1Div);
+                    }
+                    if (config.title2) {
+                        const title2Div = document.createElement('div'); title2Div.className = 'preview-title';
+                        title2Div.style.left = (config.title2.left * inchesToPixels) + 'px'; title2Div.style.top = (config.title2.top * inchesToPixels) + 'px';
+                        title2Div.style.width = (config.title2.width * inchesToPixels) + 'px'; title2Div.style.height = (config.title2.height * inchesToPixels) + 'px';
+                        if (captionColumns.length > 0) title2Div.textContent = captionColumns.map(() => `Örnek Değer`).join('\n');
+                        else if (columnPairs.length > 0) title2Div.textContent = columnPairs[0].col2;
+                        else if (selectedColumns.length > 1) title2Div.textContent = selectedColumns[1];
+                        else title2Div.textContent = 'Başlık 2';
+                        title2Div.style.fontSize = (config.title2.fontSize || 12) + 'px';
+                        title2Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title2Div.classList.toggle('wrap', fontTitleWordWrap); title2Div.classList.toggle('normal', !fontTitleWordWrap);
+                        previewSlide.appendChild(title2Div);
+                    }
+                }
+                const labelColumns = getSelectedLabelColumns();
+                if (labelColumns.length > 0) {
+                    for (let i = 1; i <= labelCount; i++) {
+                        const labelConfig = config[`label${i}`];
+                        if (labelConfig) {
+                            const labelDiv = document.createElement('div'); labelDiv.className = 'preview-label';
+                            if (addLabelBorder) labelDiv.classList.add('with-border');
+                            labelDiv.style.left = (labelConfig.left * inchesToPixels) + 'px'; labelDiv.style.top = (labelConfig.top * inchesToPixels) + 'px';
+                            labelDiv.style.width = (labelConfig.width * inchesToPixels) + 'px'; labelDiv.style.height = (labelConfig.height * inchesToPixels) + 'px';
+                            labelDiv.style.fontSize = (labelConfig.fontSize || 12) + 'px';
+                            let labelHTML = '<div class="sample-content">';
+                            labelColumns.forEach(col => { labelHTML += `<div><span class="label-bold">${col}:</span> Örnek Değer</div>`; });
+                            labelHTML += '</div>'; labelDiv.innerHTML = labelHTML;
+                            previewSlide.appendChild(labelDiv);
+                        }
+                    }
+                }
+            } else if (presentationType === 'triple') {
+                const config = positionConfig.triple;
+                const selectedColumns = getSelectedColumns();
+                if (config.image1) {
+                    const image1Div = document.createElement('div'); image1Div.className = 'preview-image';
+                    image1Div.style.left = (config.image1.left * inchesToPixels) + 'px'; image1Div.style.top = (config.image1.top * inchesToPixels) + 'px';
+                    image1Div.style.width = (config.image1.width * inchesToPixels) + 'px'; image1Div.style.height = (config.image1.height * inchesToPixels) + 'px';
+                    const sampleImage1 = document.createElement('div'); sampleImage1.className = 'sample-image'; sampleImage1.textContent = selectedColumns[0] || 'Resim 1';
+                    image1Div.appendChild(sampleImage1); previewSlide.appendChild(image1Div);
+                }
+                if (config.image2) {
+                    const image2Div = document.createElement('div'); image2Div.className = 'preview-image';
+                    image2Div.style.left = (config.image2.left * inchesToPixels) + 'px'; image2Div.style.top = (config.image2.top * inchesToPixels) + 'px';
+                    image2Div.style.width = (config.image2.width * inchesToPixels) + 'px'; image2Div.style.height = (config.image2.height * inchesToPixels) + 'px';
+                    const sampleImage2 = document.createElement('div'); sampleImage2.className = 'sample-image'; sampleImage2.textContent = selectedColumns[1] || 'Resim 2';
+                    image2Div.appendChild(sampleImage2); previewSlide.appendChild(image2Div);
+                }
+                if (config.image3) {
+                    const image3Div = document.createElement('div'); image3Div.className = 'preview-image';
+                    image3Div.style.left = (config.image3.left * inchesToPixels) + 'px'; image3Div.style.top = (config.image3.top * inchesToPixels) + 'px';
+                    image3Div.style.width = (config.image3.width * inchesToPixels) + 'px'; image3Div.style.height = (config.image3.height * inchesToPixels) + 'px';
+                    const sampleImage3 = document.createElement('div'); sampleImage3.className = 'sample-image'; sampleImage3.textContent = selectedColumns[2] || 'Resim 3';
+                    image3Div.appendChild(sampleImage3); previewSlide.appendChild(image3Div);
+                }
+                if (useColumnTitles || captionColumns.length > 0) {
+                    if (config.title1) {
+                        const title1Div = document.createElement('div'); title1Div.className = 'preview-title';
+                        title1Div.style.left = (config.title1.left * inchesToPixels) + 'px'; title1Div.style.top = (config.title1.top * inchesToPixels) + 'px';
+                        title1Div.style.width = (config.title1.width * inchesToPixels) + 'px'; title1Div.style.height = (config.title1.height * inchesToPixels) + 'px';
+                        title1Div.textContent = (captionColumns.length > 0) ? captionColumns.map(() => `Örnek Değer`).join('\n') : (selectedColumns[0] || 'Başlık 1');
+                        title1Div.style.fontSize = (config.title1.fontSize || 12) + 'px';
+                        title1Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title1Div.classList.toggle('wrap', fontTitleWordWrap); title1Div.classList.toggle('normal', !fontTitleWordWrap);
+                        previewSlide.appendChild(title1Div);
+                    }
+                    if (config.title2) {
+                        const title2Div = document.createElement('div'); title2Div.className = 'preview-title';
+                        title2Div.style.left = (config.title2.left * inchesToPixels) + 'px'; title2Div.style.top = (config.title2.top * inchesToPixels) + 'px';
+                        title2Div.style.width = (config.title2.width * inchesToPixels) + 'px'; title2Div.style.height = (config.title2.height * inchesToPixels) + 'px';
+                        title2Div.textContent = (captionColumns.length > 0) ? captionColumns.map(() => `Örnek Değer`).join('\n') : (selectedColumns[1] || 'Başlık 2');
+                        title2Div.style.fontSize = (config.title2.fontSize || 12) + 'px';
+                        title2Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title2Div.classList.toggle('wrap', fontTitleWordWrap); title2Div.classList.toggle('normal', !fontTitleWordWrap);
+                        previewSlide.appendChild(title2Div);
+                    }
+                    if (config.title3) {
+                        const title3Div = document.createElement('div'); title3Div.className = 'preview-title';
+                        title3Div.style.left = (config.title3.left * inchesToPixels) + 'px'; title3Div.style.top = (config.title3.top * inchesToPixels) + 'px';
+                        title3Div.style.width = (config.title3.width * inchesToPixels) + 'px'; title3Div.style.height = (config.title3.height * inchesToPixels) + 'px';
+                        title3Div.textContent = (captionColumns.length > 0) ? captionColumns.map(() => `Örnek Değer`).join('\n') : (selectedColumns[2] || 'Başlık 3');
+                        title3Div.style.fontSize = (config.title3.fontSize || 12) + 'px';
+                        title3Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title3Div.classList.toggle('wrap', fontTitleWordWrap); title3Div.classList.toggle('normal', !fontTitleWordWrap);
+                        previewSlide.appendChild(title3Div);
+                    }
+                }
+                const labelColumns = getSelectedLabelColumns();
+                if (labelColumns.length > 0) {
+                    for (let i = 1; i <= labelCount; i++) {
+                        const labelConfig = config[`label${i}`];
+                        if (labelConfig) {
+                            const labelDiv = document.createElement('div'); labelDiv.className = 'preview-label';
+                            if (addLabelBorder) labelDiv.classList.add('with-border');
+                            labelDiv.style.left = (labelConfig.left * inchesToPixels) + 'px'; labelDiv.style.top = (labelConfig.top * inchesToPixels) + 'px';
+                            labelDiv.style.width = (labelConfig.width * inchesToPixels) + 'px'; labelDiv.style.height = (labelConfig.height * inchesToPixels) + 'px';
+                            labelDiv.style.fontSize = (labelConfig.fontSize || 12) + 'px';
+                            let labelHTML = '<div class="sample-content">';
+                            labelColumns.forEach(col => { labelHTML += `<div><span class="label-bold">${col}:</span> Örnek Değer</div>`; });
+                            labelHTML += '</div>'; labelDiv.innerHTML = labelHTML;
+                            previewSlide.appendChild(labelDiv);
+                        }
+                    }
+                }
+            }
+            
+            const createButton = document.getElementById('createButton');
+            const selectedSheets = getSelectedSheets();
+            const selectedColumns = getSelectedColumns();
+            const columnPairs = getColumnPairs();
+            if (selectedSheets.length > 0 && (selectedColumns.length > 0 || columnPairs.length > 0)) createButton.disabled = false;
+            else createButton.disabled = true;
+        }
+        
+        function createPresentation() {
+            const selectedSheets = getSelectedSheets();
+            const presentationType = document.getElementById('presentationType').value;
+            const selectedColumns = getSelectedColumns();
+            const useColumnTitles = document.getElementById('previewUseColumnTitles').checked;
+            const captionColumns = getSelectedCaptionColumns();
+            const labelColumns = getSelectedLabelColumns();
+            const addLabelBorder = document.getElementById('previewAddLabelBorder').checked;
+            const labelCount = parseInt(document.getElementById('labelCount').value);
+            const skipSingleImages = document.getElementById('previewSkipSingleImages').checked;
+            const groupByName = document.getElementById('previewGroupByName').checked;
+            const groupingColumn = document.getElementById('groupingColumn').value || '';
+            const columnPairs = getColumnPairs();
+            const skipEmptyRows = document.getElementById('previewSkipEmptyRows').checked;
+            const fontTitleBold = document.getElementById('fontTitleBold').checked;
+            const fontTitleWordWrap = document.getElementById('fontTitleWordWrap').checked;
+            
+            const requestData = {
+                'filename': currentFileData.filename,
+                'selected_sheets': selectedSheets,
+                'presentation_type': presentationType,
+                'selected_columns': selectedColumns,
+                'use_column_titles': useColumnTitles,
+                'caption_columns': captionColumns,
+                'label_columns': labelColumns,
+                'add_label_border': addLabelBorder,
+                'label_count': labelCount,
+                'skip_single_images': skipSingleImages,
+                'group_by_name': groupByName,
+                'grouping_column': groupingColumn,
+                'column_pairs': columnPairs,
+                'skip_empty_rows': skipEmptyRows,
+                'position_config': positionConfig,
+                'font_title_bold': fontTitleBold,
+                'font_title_word_wrap': fontTitleWordWrap,
+                'background_image_data': currentBgImageData
+            };
+            
+            const createButton = document.getElementById('createButton');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressText = document.getElementById('progressText');
+            
+            createButton.disabled = true;
+            createButton.textContent = 'Sunum Oluşturuluyor...';
+            progressContainer.style.display = 'block';
+            
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 1;
+                if (progress <= 90) {
+                    progressFill.style.width = progress + '%';
+                    progressPercent.textContent = '%' + progress;
+                    if (progress < 30) progressText.textContent = 'Excel dosyası okunuyor...';
+                    else if (progress < 60) progressText.textContent = 'Resimler indiriliyor...';
+                    else progressText.textContent = 'Sunum oluşturuluyor...';
+                }
+            }, 100);
+            
+            fetch('/create_presentation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+                    return null;
+                }
+                if (response.ok) return response.blob();
+                else return response.json().then(data => { throw new Error(data.error || 'Sunum oluşturulurken hata oluştu'); });
+            })
+            .then(blob => {
+                if (!blob) return;
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                progressPercent.textContent = '%100';
+                progressText.textContent = 'Sunum hazır! İndiriliyor...';
+                setTimeout(() => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'presentation.pptx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    createButton.disabled = false;
+                    createButton.textContent = 'Sunumu Oluştur ve İndir';
+                    progressContainer.style.display = 'none';
+                    alert('Sunum başarıyla oluşturuldu ve indiriliyor!');
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                clearInterval(progressInterval);
+                createButton.disabled = false;
+                createButton.textContent = 'Sunumu Oluştur ve İndir';
+                progressContainer.style.display = 'none';
+                alert('Hata: ' + error.message);
+            });
+        }
+        
+        function getSelectedSheets() { const checkboxes = document.querySelectorAll('#sheetCheckboxes input[type="checkbox"]:checked'); return Array.from(checkboxes).map(cb => cb.value); }
+        function getSelectedColumns() { const checkboxes = document.querySelectorAll('#columnCheckboxes input[type="checkbox"]:checked'); return Array.from(checkboxes).map(cb => cb.value); }
+        function getSelectedLabelColumns() { const checkboxes = document.querySelectorAll('#labelColumnCheckboxes input[type="checkbox"]:checked'); return Array.from(checkboxes).map(cb => cb.value); }
+        function getSelectedCaptionColumns() { const checkboxes = document.querySelectorAll('#captionColumnCheckboxes input[type="checkbox"]:checked'); return Array.from(checkboxes).map(cb => cb.value); }
+    </script>
+</body>
+</html>
