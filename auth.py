@@ -72,15 +72,24 @@ def sanitize_user_id(user_id: str) -> str:
 
 def user_upload_dir(user_id: str | None = None) -> str:
     """
-    Kullanıcıya özel upload kökü: Uploads/<user_id>/
-    Klasör yoksa oluşturur.
+    Per-user upload root under a writable temp directory:
+    <UPLOAD_ROOT>/<user_id>/  (e.g. /tmp/Report2Slide/Uploads/<user_id>/ on Vercel)
+    Creates the folder if missing.
     """
     uid = user_id or current_user_id()
     if not uid:
         raise RuntimeError("Authentication required.")
     safe = sanitize_user_id(uid)
+    # Ensure base temp upload root exists (read-only project FS on Vercel)
+    try:
+        config.UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        raise RuntimeError(f"Upload directory is not writable ({config.UPLOAD_ROOT}): {e}") from e
     path = config.UPLOAD_ROOT / safe
-    path.mkdir(parents=True, exist_ok=True)
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        raise RuntimeError(f"Could not create user upload folder ({path}): {e}") from e
     return str(path)
 
 

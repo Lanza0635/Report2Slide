@@ -797,7 +797,7 @@ def upload_file():
 
         print(
             f"[upload] user={current_user_id()} original={original_name!r} "
-            f"saved_as={filename!r} path={filepath!r}"
+            f"saved_as={filename!r} path={filepath!r} upload_root={config.UPLOAD_ROOT!s}"
         )
 
         try:
