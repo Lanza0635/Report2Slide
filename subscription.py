@@ -175,7 +175,7 @@ def pro_required(view):
 
         if _wants_json_error():
             return jsonify({
-                "error": "Bu özellik Pro abonelik gerektirir.",
+                "error": "This feature requires a Pro subscription.",
                 "code": "pro_required",
                 "pricing_url": url_for("pricing"),
             }), 403

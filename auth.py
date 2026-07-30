@@ -23,7 +23,7 @@ def get_supabase() -> Client:
     if _supabase is None:
         if not config.SUPABASE_URL or not config.SUPABASE_SERVICE_ROLE_KEY:
             raise RuntimeError(
-                "SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY .env dosyasında tanımlı olmalıdır."
+                "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in the .env file."
             )
         _supabase = create_client(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY)
     return _supabase
@@ -65,7 +65,7 @@ def sanitize_user_id(user_id: str) -> str:
         # Supabase UUID dışı id gelirse alfanumerik + tire ile sınırla
         cleaned = "".join(c for c in uid if c.isalnum() or c in "-_")
         if not cleaned or ".." in cleaned:
-            raise ValueError("Geçersiz kullanıcı kimliği.")
+            raise ValueError("Invalid user ID.")
         return cleaned[:128]
     return uid
 
@@ -77,7 +77,7 @@ def user_upload_dir(user_id: str | None = None) -> str:
     """
     uid = user_id or current_user_id()
     if not uid:
-        raise RuntimeError("Oturum gerekli.")
+        raise RuntimeError("Authentication required.")
     safe = sanitize_user_id(uid)
     path = config.UPLOAD_ROOT / safe
     path.mkdir(parents=True, exist_ok=True)
@@ -104,7 +104,7 @@ def login_required(view):
     def wrapped(*args, **kwargs):
         if not is_authenticated():
             if _wants_json_error():
-                return jsonify({"error": "Oturum gerekli. Lütfen giriş yapın."}), 401
+                return jsonify({"error": "Authentication required. Please log in."}), 401
             return redirect(url_for("login", next=request.path))
         return view(*args, **kwargs)
 
@@ -113,16 +113,16 @@ def login_required(view):
 
 def auth_error_message(exc: Exception) -> str:
     """Supabase / Auth hatalarını kullanıcıya okunur metne çevir."""
-    msg = str(exc).strip() or "Kimlik doğrulama hatası."
+    msg = str(exc).strip() or "Authentication error."
     lower = msg.lower()
     if "invalid login" in lower or "invalid_credentials" in lower:
-        return "E-posta veya şifre hatalı."
+        return "Invalid email or password."
     if "user already registered" in lower or "already been registered" in lower:
-        return "Bu e-posta adresi zaten kayıtlı."
+        return "This email is already registered."
     if "password" in lower and ("least" in lower or "weak" in lower or "short" in lower):
-        return "Şifre çok kısa veya güvenlik kurallarını karşılamıyor (en az 6 karakter)."
+        return "Password is too short or does not meet security requirements (min. 6 characters)."
     if "email" in lower and "invalid" in lower:
-        return "Geçersiz e-posta adresi."
+        return "Invalid email address."
     if "supabase_url" in lower or "service_role" in lower or ".env" in lower:
-        return "Sunucu yapılandırması eksik. Yöneticinin .env dosyasını kontrol etmesi gerekir."
+        return "Server configuration is incomplete. Please ask an admin to check the .env file."
     return msg

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PowerPoint Sunum Oluşturucu</title>
+    <title>PowerPoint Slide Generator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -213,7 +213,7 @@
         }
         #slidePreview {
             position: relative;
-            /* 16:9 Formatı */
+            /* 16:9 Format */
             width: 1066px;
             height: 600px;
             margin: 0 auto;
@@ -635,19 +635,19 @@
 </head>
 <body>
     <nav class="app-top-nav">
-        <a href="{{ url_for('dashboard') }}">← Ana sayfa</a>
-        <span class="app-top-nav-title">Rapordan Sunum</span>
+        <a href="{{ url_for('dashboard') }}">← Dashboard</a>
+        <span class="app-top-nav-title">Slide Generator</span>
         <span class="app-top-nav-spacer" style="display:flex;gap:12px;justify-content:flex-end;align-items:center;min-width:200px;">
-            <a href="{{ url_for('rapor_fotograf_app') }}">Rapordan Fotoğraf</a>
+            <a href="{{ url_for('rapor_fotograf_app') }}">Photo Extractor</a>
             {% if is_authenticated %}
-            <a href="{{ url_for('logout') }}" title="{{ current_user_email }}">Çıkış</a>
+            <a href="{{ url_for('logout') }}" title="{{ current_user_email }}">Log out</a>
             {% endif %}
         </span>
     </nav>
     <div class="main-container">
         <div class="preview-container" id="previewContainer">
             <div class="section">
-                <h2>Sunum Önizleme</h2>
+                <h2>Presentation Preview</h2>
                 <div class="preview-area">
                     <div id="slidePreview">
                         <div class="preview-slide" id="previewSlide">
@@ -657,20 +657,20 @@
                     <div class="preview-legend" id="previewLegend">
                         <div class="legend-item">
                             <div class="legend-color" style="background-color: #4CAF50;"></div>
-                            <span>Resim</span>
+                            <span>Image</span>
                         </div>
                         <div class="legend-item">
                             <div class="legend-color" style="background-color: #2196F3;"></div>
-                            <span>Başlık</span>
+                            <span>Title</span>
                         </div>
                         <div class="legend-item">
                             <div class="legend-color" style="background-color: #f8f9fa; border: 1px solid #6c757d;"></div>
-                            <span>Etiket</span>
+                            <span>Label</span>
                         </div>
                     </div>
                     
                     <div class="progress-container" id="progressContainer">
-                        <div class="progress-text" id="progressText">Sunum hazırlanıyor...</div>
+                        <div class="progress-text" id="progressText">Preparing presentation...</div>
                         <div class="progress-bar">
                             <div class="progress-fill" id="progressFill"></div>
                         </div>
@@ -680,28 +680,28 @@
             </div>
 
             <div class="preview-controls" id="previewControls" style="display:none;">
-                <div class="preview-controls-title">Sunum Kontrolleri</div>
+                <div class="preview-controls-title">Presentation Controls</div>
                 
                 <div class="preview-controls-grid">
                     <div class="preview-control-group">
                         <div class="preview-control-item">
                             <input type="checkbox" id="previewGroupByName" onchange="updatePreview()">
-                            <label for="previewGroupByName">Aynı isme göre sırala (Satırları grupla)</label>
+                            <label for="previewGroupByName">Sort by same name (Group rows)</label>
                         </div>
                         <div class="preview-control-item">
                             <input type="checkbox" id="previewSkipSingleImages" onchange="updatePreview()">
-                            <label for="previewSkipSingleImages">Tekli resimleri atla</label>
+                            <label for="previewSkipSingleImages">Skip single images</label>
                         </div>
                     </div>
                     
                     <div class="preview-control-group">
                         <div class="preview-control-item">
                             <input type="checkbox" id="previewUseColumnTitles" onchange="updatePreview()">
-                            <label for="previewUseColumnTitles">Sütun başlıklarını kullan</label>
+                            <label for="previewUseColumnTitles">Use column titles</label>
                         </div>
                         <div class="preview-control-item">
                             <input type="checkbox" id="previewAddLabelBorder" onchange="updatePreview()">
-                            <label for="previewAddLabelBorder">Etiketlere çerçeve ekle</label>
+                            <label for="previewAddLabelBorder">Add border to labels</label>
                         </div>
                     </div>
                 </div>
@@ -709,140 +709,140 @@
                 <div class="triple-options" id="tripleOptions" style="display: none;">
                     <div class="preview-control-item">
                         <input type="checkbox" id="previewSkipEmptyRows" onchange="updatePreview()">
-                        <label for="previewSkipEmptyRows"><strong>Boş satırları atla</strong> - Eksik resimleri tamamlamak için sonraki satırlardan resim al</label>
+                        <label for="previewSkipEmptyRows"><strong>Skip empty rows</strong> - Pull images from following rows to fill missing ones</label>
                     </div>
                 </div>
                 
                 <div class="preview-buttons">
-                    <button onclick="createPresentation()" id="createButton">Sunumu Oluştur ve İndir</button>
-                    <button onclick="updatePreview()">Önizlemeyi Güncelle</button>
+                    <button onclick="createPresentation()" id="createButton">Generate Presentation</button>
+                    <button onclick="updatePreview()">Update Preview</button>
                 </div>
             </div>
         </div>
 
         <div class="welcome-screen" id="welcomeScreen">
-            <div class="welcome-title">PowerPoint Sunum Oluşturucu</div>
-            <div class="welcome-subtitle">Excel'den PowerPoint'e Dönüştürme Aracı</div>
+            <div class="welcome-title">PowerPoint Slide Generator</div>
+            <div class="welcome-subtitle">Excel to PowerPoint Conversion Tool</div>
             <div class="welcome-description">
-                Excel dosyanızı yükleyin, ayarlarınızı yapın ve profesyonel PowerPoint sunumlarınızı otomatik olarak oluşturun.
+                Upload your Excel file, configure your settings, and automatically generate professional PowerPoint presentations.
             </div>
             <div class="welcome-arrow">→</div>
         </div>
 
         <div class="form-container">
-            <h1>PowerPoint Oluşturucu</h1>
+            <h1>PowerPoint Generator</h1>
             
             <div class="section">
-                <div class="form-section-title">1. Excel Dosyası Yükle</div>
+                <div class="form-section-title">1. Upload Excel File</div>
                 <input type="file" id="excelFile" accept=".xlsx,.xls" style="width: 100%; margin-bottom: 8px;">
-                <button onclick="uploadFile()">Dosyayı Yükle</button>
+                <button onclick="uploadFile()">Upload</button>
                 <div id="uploadStatus"></div>
             </div>
             
             <div class="section" id="sheetSection" style="display:none;">
-                <div class="form-section-title">2. Sheet Seçin</div>
+                <div class="form-section-title">2. Select sheets</div>
                 <div id="sheetCheckboxes" class="checkbox-group"></div>
             </div>
             
             <div class="section" id="presentationTypeSection" style="display:none;">
-                <div class="form-section-title">3. Sunum Türü Seçin</div>
+                <div class="form-section-title">3. Select Presentation Type</div>
                 <select id="presentationType" onchange="changePresentationType()">
-                    <option value="single">Tekli Slayt</option>
-                    <option value="double">Çiftli Slayt</option>
-                    <option value="triple">Üçlü Slayt</option>
+                    <option value="single">Single Slide</option>
+                    <option value="double">Double Slide</option>
+                    <option value="triple">Triple Slide</option>
                 </select>
             </div>
             
             <div class="section" id="columnSection" style="display:none;">
-                <div class="form-section-title">4. Resim Sütunlarını Seçin</div>
+                <div class="form-section-title">4. Select Image Columns</div>
                 <div id="columnCheckboxes" class="checkbox-group"></div>
                 
                 <div id="columnPairingSection" class="column-pairing" style="display: none;">
-                    <div class="form-section-title">Sütun Eşleştirme</div>
+                    <div class="form-section-title">Column Pairing</div>
                     <div class="pairing-info">
-                        Çiftli sunum için sütunları eşleştirin. Her çift aynı slaytta gösterilecektir.
-                        "Tekli resimleri atla" seçeneği aktifse, her iki sütunda da resim olmayan çiftler atlanacaktır.
+                        Pair columns for double presentations. Each pair will appear on the same slide.
+                        If "Skip single images" is enabled, pairs with no image in either column will be skipped.
                     </div>
                     <div id="columnPairsContainer">
                     </div>
-                    <button type="button" class="add-pair-btn" onclick="addColumnPair()">+ Çift Ekle</button>
+                    <button type="button" class="add-pair-btn" onclick="addColumnPair()">+ Add Pair</button>
                 </div>
             </div>
 
             <div class="section" id="groupingSection" style="display:none;">
-                <div class="form-section-title">5. Gruplama Seçenekleri</div>
+                <div class="form-section-title">5. Grouping Options</div>
                 
                 <div id="groupingOptions" style="margin-top:10px;">
-                    <div style="font-size: 13px; margin-bottom: 8px;">Gruplama için sütun seçin:</div>
+                    <div style="font-size: 13px; margin-bottom: 8px;">Select a column for grouping:</div>
                     <select id="groupingColumn" style="width: 100%; margin-bottom: 8px;" onchange="updatePreview()">
-                        <option value="">-- Gruplama sütunu seçin --</option>
+                        <option value="">-- Select grouping column --</option>
                     </select>
                     <div style="font-size: 12px; color: #666;">
-                        Not: Aynı değere sahip satırlar gruplanacak ve aynı slaytlarda gösterilecektir.
+                        Note: Rows with the same value will be grouped and shown on the same slides.
                     </div>
                 </div>
             </div>
             
             <div class="section" id="positionSection" style="display:none;">
-                <div class="form-section-title">6. Konum Ayarları</div>
+                <div class="form-section-title">6. Position Settings</div>
                 
                 <div class="tab-buttons">
-                    <button class="tab-button active" onclick="showTab('single')">Tekli</button>
-                    <button class="tab-button" onclick="showTab('double')">Çiftli</button>
-                    <button class="tab-button" onclick="showTab('triple')">Üçlü</button>
+                    <button class="tab-button active" onclick="showTab('single')">Single</button>
+                    <button class="tab-button" onclick="showTab('double')">Double</button>
+                    <button class="tab-button" onclick="showTab('triple')">Triple</button>
                 </div>
                 
                 <div id="singleTab" class="tab-content active">
                     <div class="config-section">
-                        <h4>Resim Konumu</h4>
+                        <h4>Image Position</h4>
                         <div class="position-config">
                             <div class="position-input">
-                                <label>Sol (inç):</label>
+                                <label>Left (in):</label>
                                 <input type="number" id="single_image_left" value="1" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Üst (inç):</label>
+                                <label>Top (in):</label>
                                 <input type="number" id="single_image_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Genişlik (inç):</label>
+                                <label>Width (in):</label>
                                 <input type="number" id="single_image_width" value="8" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Yükseklik (inç):</label>
+                                <label>Height (in):</label>
                                 <input type="number" id="single_image_height" value="6" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                         </div>
                     </div>
                     
                     <div class="config-section">
-                        <h4>Başlık Konumu</h4>
+                        <h4>Title Position</h4>
                         <div class="position-config">
                             <div class="position-input">
-                                <label>Sol (inç):</label>
+                                <label>Left (in):</label>
                                 <input type="number" id="single_title_left" value="1" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Üst (inç):</label>
+                                <label>Top (in):</label>
                                 <input type="number" id="single_title_top" value="1" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Genişlik (inç):</label>
+                                <label>Width (in):</label>
                                 <input type="number" id="single_title_width" value="8" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Yükseklik (inç):</label>
+                                <label>Height (in):</label>
                                 <input type="number" id="single_title_height" value="0.8" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Yazı Boyutu:</label>
+                                <label>Font size:</label>
                                 <input type="number" id="single_title_font" value="14" min="8" max="72" onchange="updatePreview()">
                             </div>
                         </div>
                     </div>
                     
                     <div class="config-section">
-                        <h4>Etiket Konumları</h4>
+                        <h4>Label Positions</h4>
                         <div class="label-tabs" id="singleLabelTabs"></div>
                         <div id="singleLabelTabsContent"></div>
                     </div>
@@ -850,71 +850,71 @@
                 
                 <div id="doubleTab" class="tab-content">
                     <div class="config-section">
-                        <h4>Resim Konumları</h4>
+                        <h4>Image Positions</h4>
                         <div class="position-config">
                             <div class="position-input">
-                                <label>Resim 1 Sol:</label>
+                                <label>Image 1 Left:</label>
                                 <input type="number" id="double_image1_left" value="0.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Resim 1 Üst:</label>
+                                <label>Image 1 Top:</label>
                                 <input type="number" id="double_image1_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Resim 2 Sol:</label>
+                                <label>Image 2 Left:</label>
                                 <input type="number" id="double_image2_left" value="5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Resim 2 Üst:</label>
+                                <label>Image 2 Top:</label>
                                 <input type="number" id="double_image2_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Genişlik:</label>
+                                <label>Width:</label>
                                 <input type="number" id="double_image_width" value="4" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Yükseklik:</label>
+                                <label>Height:</label>
                                 <input type="number" id="double_image_height" value="3" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                         </div>
                     </div>
                     
                     <div class="config-section">
-                        <h4>Başlık Konumları</h4>
+                        <h4>Title Positions</h4>
                         <div class="position-config">
                             <div class="position-input">
-                                <label>Başlık 1 Sol:</label>
+                                <label>Title 1 Left:</label>
                                 <input type="number" id="double_title1_left" value="0.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Başlık 1 Üst:</label>
+                                <label>Title 1 Top:</label>
                                 <input type="number" id="double_title1_top" value="1" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Başlık 2 Sol:</label>
+                                <label>Title 2 Left:</label>
                                 <input type="number" id="double_title2_left" value="5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Başlık 2 Üst:</label>
+                                <label>Title 2 Top:</label>
                                 <input type="number" id="double_title2_top" value="1" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Genişlik:</label>
+                                <label>Width:</label>
                                 <input type="number" id="double_title_width" value="4" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Yükseklik (inç):</label>
+                                <label>Height (in):</label>
                                 <input type="number" id="double_title_height" value="0.8" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Yazı Boyutu:</label>
+                                <label>Font size:</label>
                                 <input type="number" id="double_title_font" value="14" min="8" max="72" onchange="updatePreview()">
                             </div>
                         </div>
                     </div>
                     
                     <div class="config-section">
-                        <h4>Etiket Konumları</h4>
+                        <h4>Label Positions</h4>
                         <div class="label-tabs" id="doubleLabelTabs"></div>
                         <div id="doubleLabelTabsContent"></div>
                     </div>
@@ -922,87 +922,87 @@
                 
                 <div id="tripleTab" class="tab-content">
                     <div class="config-section">
-                        <h4>Resim Konumları</h4>
+                        <h4>Image Positions</h4>
                         <div class="position-config">
                             <div class="position-input">
-                                <label>Resim 1 Sol:</label>
+                                <label>Image 1 Left:</label>
                                 <input type="number" id="triple_image1_left" value="0.3" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Resim 1 Üst:</label>
+                                <label>Image 1 Top:</label>
                                 <input type="number" id="triple_image1_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Resim 2 Sol:</label>
+                                <label>Image 2 Left:</label>
                                 <input type="number" id="triple_image2_left" value="3" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Resim 2 Üst:</label>
+                                <label>Image 2 Top:</label>
                                 <input type="number" id="triple_image2_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Resim 3 Sol:</label>
+                                <label>Image 3 Left:</label>
                                 <input type="number" id="triple_image3_left" value="5.7" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Resim 3 Üst:</label>
+                                <label>Image 3 Top:</label>
                                 <input type="number" id="triple_image3_top" value="1.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Genişlik:</label>
+                                <label>Width:</label>
                                 <input type="number" id="triple_image_width" value="2.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Yükseklik:</label>
+                                <label>Height:</label>
                                 <input type="number" id="triple_image_height" value="2" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                         </div>
                     </div>
                     
                     <div class="config-section">
-                        <h4>Başlık Konumları</h4>
+                        <h4>Title Positions</h4>
                         <div class="position-config">
                             <div class="position-input">
-                                <label>Başlık 1 Sol:</label>
+                                <label>Title 1 Left:</label>
                                 <input type="number" id="triple_title1_left" value="0.3" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Başlık 1 Üst:</label>
+                                <label>Title 1 Top:</label>
                                 <input type="number" id="triple_title1_top" value="1" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Başlık 2 Sol:</label>
+                                <label>Title 2 Left:</label>
                                 <input type="number" id="triple_title2_left" value="3" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Başlık 2 Üst:</label>
+                                <label>Title 2 Top:</label>
                                 <input type="number" id="triple_title2_top" value="1" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Başlık 3 Sol:</label>
+                                <label>Title 3 Left:</label>
                                 <input type="number" id="triple_title3_left" value="5.7" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Başlık 3 Üst:</label>
+                                <label>Title 3 Top:</label>
                                 <input type="number" id="triple_title3_top" value="1" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Genişlik:</label>
+                                <label>Width:</label>
                                 <input type="number" id="triple_title_width" value="2.5" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Yükseklik (inç):</label>
+                                <label>Height (in):</label>
                                 <input type="number" id="triple_title_height" value="0.8" step="0.1" min="0" onchange="updatePreview()">
                             </div>
                             <div class="position-input">
-                                <label>Yazı Boyutu:</label>
+                                <label>Font size:</label>
                                 <input type="number" id="triple_title_font" value="12" min="8" max="72" onchange="updatePreview()">
                             </div>
                         </div>
                     </div>
                     
                     <div class="config-section">
-                        <h4>Etiket Konumları</h4>
+                        <h4>Label Positions</h4>
                         <div class="label-tabs" id="tripleLabelTabs"></div>
                         <div id="tripleLabelTabsContent"></div>
                     </div>
@@ -1010,55 +1010,55 @@
             </div>
 
             <div class="section" id="captionSection" style="display:none;">
-                <div class="form-section-title">7. Fotoğraf Başlığı (Excel'den)</div>
-                <div style="font-size: 13px; margin-bottom: 8px;">Başlık için sütun(ları) seçin (birden fazla seçebilirsiniz):</div>
+                <div class="form-section-title">7. Photo Caption (from Excel)</div>
+                <div style="font-size: 13px; margin-bottom: 8px;">Select column(s) for the caption (you can select more than one):</div>
                 <div id="captionColumnCheckboxes" class="checkbox-group"></div>
                 <div style="font-size: 12px; color: #666; margin-top: 6px;">
-                    Not: Burada seçim yaparsanız, "Sütun başlıklarını kullan" seçeneği yerine sadece hücre değeri başlık olarak yazılır.
+                    Note: If you select columns here, only the cell value is used as the caption instead of the "Use column titles" option.
                 </div>
             </div>
 
             <div class="section" id="labelSection" style="display:none;">
-                <div class="form-section-title">8. Etiket Seçenekleri</div>
+                <div class="form-section-title">8. Label Options</div>
                 <div class="label-count-selector">
-                    <label for="labelCount">Etiket Sayısı:</label>
+                    <label for="labelCount">Label Count:</label>
                     <select id="labelCount" onchange="changeLabelCount()">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
                     </select>
                 </div>
-                <div style="font-size: 13px; margin-bottom: 8px;">Etiket İçin Sütunları Seçin:</div>
+                <div style="font-size: 13px; margin-bottom: 8px;">Select Columns for Labels:</div>
                 <div id="labelColumnCheckboxes" class="checkbox-group"></div>
             </div>
 
             <div class="section" id="fontSection" style="display:none;">
-                <div class="form-section-title">9. Yazı Tipi Ayarları</div>
+                <div class="form-section-title">9. Font Settings</div>
                 <div class="config-section">
-                    <h4>Başlık (Title) Ayarları</h4>
+                    <h4>Title Settings</h4>
                     <div class="preview-control-item" style="margin-bottom: 10px;">
                         <input type="checkbox" id="fontTitleBold" checked onchange="updatePreview()">
-                        <label for="fontTitleBold">Başlıkları Kalın Yap</label>
+                        <label for="fontTitleBold">Make Titles Bold</label>
                     </div>
                     <div class="preview-control-item">
                         <input type="checkbox" id="fontTitleWordWrap" checked onchange="updatePreview()">
-                        <label for="fontTitleWordWrap">Başlık Metnini Kaydır (Taşmayı Önle)</label>
+                        <label for="fontTitleWordWrap">Wrap Title Text (Prevent Overflow)</label>
                     </div>
                 </div>
             </div>
 
             <div class="section" id="themeSection" style="display:none;">
-                <div class="form-section-title">10. Tema / Arka Plan</div>
-                <div style="font-size: 13px; margin-bottom: 8px;">Yeni arka plan ekleyin veya kayıtlı birini seçin:</div>
+                <div class="form-section-title">10. Theme / Background</div>
+                <div style="font-size: 13px; margin-bottom: 8px;">Add a new background or select a saved one:</div>
                 <input type="file" id="bgImageInput" accept="image/png, image/jpeg, image/jpg" style="width: 100%;">
-                <div style="font-size: 11px; color: #666; margin-top: 4px;">(Önerilen boyut: 1920x1080px veya 16:9 oranında. Yüklenenler tarayıcıda saklanır.)</div>
+                <div style="font-size: 11px; color: #666; margin-top: 4px;">(Recommended size: 1920x1080px or 16:9 aspect ratio. Uploads are stored in the browser.)</div>
                 <div class="bg-gallery-host" id="bgGalleryHost">
-                    <div class="bg-gallery-title">Kayıtlı arka planlar</div>
-                    <div id="bgGalleryEmpty" class="bg-gallery-empty">Henüz kayıtlı arka plan yok. Yukarıdan PNG veya JPEG yükleyin; burada kalıcı olarak listelenir.</div>
+                    <div class="bg-gallery-title">Saved backgrounds</div>
+                    <div id="bgGalleryEmpty" class="bg-gallery-empty">No saved backgrounds yet. Upload a PNG or JPEG above; it will be listed here permanently.</div>
                     <div class="bg-gallery-strip" id="bgGalleryStrip" style="display: none;"></div>
                 </div>
                 <div class="bg-controls" id="bgControls" style="display: none;">
-                    <button type="button" class="bg-remove-btn" onclick="removeBackground()">Seçimi kaldır (önizlemede arka plan yok)</button>
+                    <button type="button" class="bg-remove-btn" onclick="removeBackground()">Clear selection (no background in preview)</button>
                 </div>
             </div>
 
@@ -1090,9 +1090,9 @@
                 return true;
             } catch (e) {
                 if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
-                    alert('Tarayıcı depolama alanı doldu. Galeriden kullanmadığınız arka planları silin veya daha küçük resimler kullanın.');
+                    alert('Browser storage is full. Delete unused backgrounds from the gallery or use smaller images.');
                 } else {
-                    alert('Arka planlar kaydedilemedi: ' + (e.message || e));
+                    alert('Could not save backgrounds: ' + (e.message || e));
                 }
                 return false;
             }
@@ -1133,7 +1133,7 @@
             savedBackgrounds.forEach(function (item) {
                 const wrap = document.createElement('div');
                 wrap.className = 'bg-gallery-item' + (selectedId === item.id && currentBgImageData ? ' selected' : '');
-                wrap.title = item.name || 'Arka plan';
+                wrap.title = item.name || 'Background';
                 wrap.onclick = function (ev) {
                     if (ev.target.closest && ev.target.closest('.bg-gallery-delete')) return;
                     selectBackgroundById(item.id);
@@ -1144,7 +1144,7 @@
                 const del = document.createElement('button');
                 del.type = 'button';
                 del.className = 'bg-gallery-delete';
-                del.setAttribute('aria-label', 'Galeriden sil');
+                del.setAttribute('aria-label', 'Remove from gallery');
                 del.innerHTML = '&times;';
                 del.onclick = function (ev) {
                     ev.stopPropagation();
@@ -1152,7 +1152,7 @@
                 };
                 const cap = document.createElement('div');
                 cap.className = 'bg-gallery-name';
-                cap.textContent = item.name || 'Arka plan';
+                cap.textContent = item.name || 'Background';
                 wrap.appendChild(del);
                 wrap.appendChild(img);
                 wrap.appendChild(cap);
@@ -1490,7 +1490,7 @@
                 for (let i = 1; i <= labelCount; i++) {
                     const tabButton = document.createElement('button');
                     tabButton.className = i === 1 ? 'label-tab active' : 'label-tab';
-                    tabButton.textContent = `Etiket ${i}`;
+                    tabButton.textContent = `Label ${i}`;
                     tabButton.onclick = () => showLabelTab(type, i);
                     tabsContainer.appendChild(tabButton);
                     
@@ -1500,11 +1500,11 @@
                     
                     const positionConfigHTML = `
                         <div class="position-config">
-                            <div class="position-input"><label>Sol (inç):</label><input type="number" id="${type}_label${i}_left" value="${getLabelDefaultValue(type, i, 'left')}" step="0.1" min="0" onchange="updatePreview()"></div>
-                            <div class="position-input"><label>Üst (inç):</label><input type="number" id="${type}_label${i}_top" value="${getLabelDefaultValue(type, i, 'top')}" step="0.1" min="0" onchange="updatePreview()"></div>
-                            <div class="position-input"><label>Genişlik (inç):</label><input type="number" id="${type}_label${i}_width" value="${getLabelDefaultValue(type, i, 'width')}" step="0.1" min="0" onchange="updatePreview()"></div>
-                            <div class="position-input"><label>Yükseklik (inç):</label><input type="number" id="${type}_label${i}_height" value="${getLabelDefaultValue(type, i, 'height')}" step="0.1" min="0" onchange="updatePreview()"></div>
-                            <div class="position-input"><label>Yazı Boyutu:</label><input type="number" id="${type}_label${i}_font" value="${getLabelDefaultValue(type, i, 'fontSize')}" min="8" max="72" onchange="updatePreview()"></div>
+                            <div class="position-input"><label>Left (in):</label><input type="number" id="${type}_label${i}_left" value="${getLabelDefaultValue(type, i, 'left')}" step="0.1" min="0" onchange="updatePreview()"></div>
+                            <div class="position-input"><label>Top (in):</label><input type="number" id="${type}_label${i}_top" value="${getLabelDefaultValue(type, i, 'top')}" step="0.1" min="0" onchange="updatePreview()"></div>
+                            <div class="position-input"><label>Width (in):</label><input type="number" id="${type}_label${i}_width" value="${getLabelDefaultValue(type, i, 'width')}" step="0.1" min="0" onchange="updatePreview()"></div>
+                            <div class="position-input"><label>Height (in):</label><input type="number" id="${type}_label${i}_height" value="${getLabelDefaultValue(type, i, 'height')}" step="0.1" min="0" onchange="updatePreview()"></div>
+                            <div class="position-input"><label>Font size:</label><input type="number" id="${type}_label${i}_font" value="${getLabelDefaultValue(type, i, 'fontSize')}" min="8" max="72" onchange="updatePreview()"></div>
                         </div>
                     `;
                     tabContent.innerHTML = positionConfigHTML;
@@ -1571,7 +1571,7 @@
         
         function updateGroupingColumnOptions() {
             const groupingColumnSelect = document.getElementById('groupingColumn');
-            groupingColumnSelect.innerHTML = '<option value="">-- Gruplama sütunu seçin --</option>';
+            groupingColumnSelect.innerHTML = '<option value="">-- Select grouping column --</option>';
             if (!currentFileData) return;
             const selectedSheets = getSelectedSheets();
             if (selectedSheets.length === 0) return;
@@ -1598,8 +1598,8 @@
             pairDiv.className = 'column-pair';
             pairDiv.innerHTML = `
                 <div class="pair-number">${pairIndex}.</div>
-                <select id="pair_${pairIndex}_col1" onchange="updatePreview()"><option value="">-- İlk sütun --</option></select>
-                <select id="pair_${pairIndex}_col2" onchange="updatePreview()"><option value="">-- İkinci sütun --</option></select>
+                <select id="pair_${pairIndex}_col1" onchange="updatePreview()"><option value="">-- First column --</option></select>
+                <select id="pair_${pairIndex}_col2" onchange="updatePreview()"><option value="">-- Second column --</option></select>
                 <button type="button" class="remove-pair-btn" onclick="removeColumnPair(${pairIndex})">×</button>
             `;
             pairsContainer.appendChild(pairDiv);
@@ -1628,7 +1628,7 @@
             const pairSelects = document.querySelectorAll('#columnPairsContainer select');
             pairSelects.forEach(select => {
                 const currentValue = select.value;
-                select.innerHTML = '<option value="">-- Sütun seçin --</option>';
+                select.innerHTML = '<option value="">-- Select column --</option>';
                 columns.forEach(column => {
                     const option = document.createElement('option');
                     option.value = column;
@@ -1663,10 +1663,10 @@
             const fileInput = document.getElementById('excelFile');
             const file = fileInput.files[0];
             const uploadStatus = document.getElementById('uploadStatus');
-            if (!file) { uploadStatus.innerHTML = '<div class="error">Lütfen bir Excel dosyası seçin</div>'; return; }
+            if (!file) { uploadStatus.innerHTML = '<div class="error">Please select an Excel file</div>'; return; }
             const formData = new FormData();
             formData.append('file', file);
-            uploadStatus.innerHTML = '<div>Dosya yükleniyor...</div>';
+            uploadStatus.innerHTML = '<div>Uploading file...</div>';
             
             fetch('/upload', { method: 'POST', body: formData })
                 .then(response => {
@@ -1679,10 +1679,10 @@
                 .then(data => {
                     if (!data) return;
                 if (data.error) {
-                    uploadStatus.innerHTML = `<div class="error">Hata: ${data.error}</div>`;
+                    uploadStatus.innerHTML = `<div class="error">Error: ${data.error}</div>`;
                 } else {
                     currentFileData = data;
-                    uploadStatus.innerHTML = `<div class="success">Dosya başarıyla yüklendi: ${data.filename}</div>`;
+                    uploadStatus.innerHTML = `<div class="success">File uploaded successfully: ${data.filename}</div>`;
                     showSheetSelection(data.sheets);
                     document.getElementById('sheetSection').style.display = 'block';
                     document.getElementById('presentationTypeSection').style.display = 'block';
@@ -1697,7 +1697,7 @@
                     updatePreview();
                 }
             })
-            .catch(error => { console.error('Error:', error); uploadStatus.innerHTML = '<div class="error">Dosya yüklenirken hata oluştu</div>'; });
+            .catch(error => { console.error('Error:', error); uploadStatus.innerHTML = '<div class="error">An error occurred while uploading the file</div>'; });
         }
         
         function showSheetSelection(sheets) {
@@ -1792,7 +1792,7 @@
                     imageDiv.style.height = (config.image.height * inchesToPixels) + 'px';
                     const sampleImage = document.createElement('div');
                     sampleImage.className = 'sample-image';
-                    sampleImage.textContent = 'Örnek Resim';
+                    sampleImage.textContent = 'Sample image';
                     imageDiv.appendChild(sampleImage);
                     previewSlide.appendChild(imageDiv);
                 }
@@ -1804,7 +1804,7 @@
                     titleDiv.style.width = (config.title.width * inchesToPixels) + 'px';
                     titleDiv.style.height = (config.title.height * inchesToPixels) + 'px';
                     if (captionColumns.length > 0) {
-                        titleDiv.textContent = captionColumns.map(() => `Örnek Değer`).join('\n');
+                        titleDiv.textContent = captionColumns.map(() => `Sample value`).join('\n');
                     } else {
                         titleDiv.textContent = selectedColumns[0];
                     }
@@ -1828,7 +1828,7 @@
                             labelDiv.style.height = (labelConfig.height * inchesToPixels) + 'px';
                             labelDiv.style.fontSize = (labelConfig.fontSize || 12) + 'px';
                             let labelHTML = '<div class="sample-content">';
-                            labelColumns.forEach(col => { labelHTML += `<div><span class="label-bold">${col}:</span> Örnek Değer</div>`; });
+                            labelColumns.forEach(col => { labelHTML += `<div><span class="label-bold">${col}:</span> Sample value</div>`; });
                             labelHTML += '</div>';
                             labelDiv.innerHTML = labelHTML;
                             previewSlide.appendChild(labelDiv);
@@ -1843,13 +1843,13 @@
                         const image1Div = document.createElement('div'); image1Div.className = 'preview-image';
                         image1Div.style.left = (config.image1.left * inchesToPixels) + 'px'; image1Div.style.top = (config.image1.top * inchesToPixels) + 'px';
                         image1Div.style.width = (config.image1.width * inchesToPixels) + 'px'; image1Div.style.height = (config.image1.height * inchesToPixels) + 'px';
-                        const sampleImage1 = document.createElement('div'); sampleImage1.className = 'sample-image'; sampleImage1.textContent = pair.col1 || 'Resim 1';
+                        const sampleImage1 = document.createElement('div'); sampleImage1.className = 'sample-image'; sampleImage1.textContent = pair.col1 || 'Image 1';
                         image1Div.appendChild(sampleImage1); previewSlide.appendChild(image1Div);
                         
                         const image2Div = document.createElement('div'); image2Div.className = 'preview-image';
                         image2Div.style.left = (config.image2.left * inchesToPixels) + 'px'; image2Div.style.top = (config.image2.top * inchesToPixels) + 'px';
                         image2Div.style.width = (config.image2.width * inchesToPixels) + 'px'; image2Div.style.height = (config.image2.height * inchesToPixels) + 'px';
-                        const sampleImage2 = document.createElement('div'); sampleImage2.className = 'sample-image'; sampleImage2.textContent = pair.col2 || 'Resim 2';
+                        const sampleImage2 = document.createElement('div'); sampleImage2.className = 'sample-image'; sampleImage2.textContent = pair.col2 || 'Image 2';
                         image2Div.appendChild(sampleImage2); previewSlide.appendChild(image2Div);
                     });
                 } else {
@@ -1858,13 +1858,13 @@
                         const image1Div = document.createElement('div'); image1Div.className = 'preview-image';
                         image1Div.style.left = (config.image1.left * inchesToPixels) + 'px'; image1Div.style.top = (config.image1.top * inchesToPixels) + 'px';
                         image1Div.style.width = (config.image1.width * inchesToPixels) + 'px'; image1Div.style.height = (config.image1.height * inchesToPixels) + 'px';
-                        const sampleImage1 = document.createElement('div'); sampleImage1.className = 'sample-image'; sampleImage1.textContent = selectedColumns[0] || 'Resim 1';
+                        const sampleImage1 = document.createElement('div'); sampleImage1.className = 'sample-image'; sampleImage1.textContent = selectedColumns[0] || 'Image 1';
                         image1Div.appendChild(sampleImage1); previewSlide.appendChild(image1Div);
                         
                         const image2Div = document.createElement('div'); image2Div.className = 'preview-image';
                         image2Div.style.left = (config.image2.left * inchesToPixels) + 'px'; image2Div.style.top = (config.image2.top * inchesToPixels) + 'px';
                         image2Div.style.width = (config.image2.width * inchesToPixels) + 'px'; image2Div.style.height = (config.image2.height * inchesToPixels) + 'px';
-                        const sampleImage2 = document.createElement('div'); sampleImage2.className = 'sample-image'; sampleImage2.textContent = selectedColumns[1] || 'Resim 2';
+                        const sampleImage2 = document.createElement('div'); sampleImage2.className = 'sample-image'; sampleImage2.textContent = selectedColumns[1] || 'Image 2';
                         image2Div.appendChild(sampleImage2); previewSlide.appendChild(image2Div);
                     }
                 }
@@ -1876,10 +1876,10 @@
                         const title1Div = document.createElement('div'); title1Div.className = 'preview-title';
                         title1Div.style.left = (config.title1.left * inchesToPixels) + 'px'; title1Div.style.top = (config.title1.top * inchesToPixels) + 'px';
                         title1Div.style.width = (config.title1.width * inchesToPixels) + 'px'; title1Div.style.height = (config.title1.height * inchesToPixels) + 'px';
-                        if (captionColumns.length > 0) title1Div.textContent = captionColumns.map(() => `Örnek Değer`).join('\n');
+                        if (captionColumns.length > 0) title1Div.textContent = captionColumns.map(() => `Sample value`).join('\n');
                         else if (columnPairs.length > 0) title1Div.textContent = columnPairs[0].col1;
                         else if (selectedColumns.length > 0) title1Div.textContent = selectedColumns[0];
-                        else title1Div.textContent = 'Başlık 1';
+                        else title1Div.textContent = 'Title 1';
                         title1Div.style.fontSize = (config.title1.fontSize || 12) + 'px';
                         title1Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title1Div.classList.toggle('wrap', fontTitleWordWrap); title1Div.classList.toggle('normal', !fontTitleWordWrap);
                         previewSlide.appendChild(title1Div);
@@ -1888,10 +1888,10 @@
                         const title2Div = document.createElement('div'); title2Div.className = 'preview-title';
                         title2Div.style.left = (config.title2.left * inchesToPixels) + 'px'; title2Div.style.top = (config.title2.top * inchesToPixels) + 'px';
                         title2Div.style.width = (config.title2.width * inchesToPixels) + 'px'; title2Div.style.height = (config.title2.height * inchesToPixels) + 'px';
-                        if (captionColumns.length > 0) title2Div.textContent = captionColumns.map(() => `Örnek Değer`).join('\n');
+                        if (captionColumns.length > 0) title2Div.textContent = captionColumns.map(() => `Sample value`).join('\n');
                         else if (columnPairs.length > 0) title2Div.textContent = columnPairs[0].col2;
                         else if (selectedColumns.length > 1) title2Div.textContent = selectedColumns[1];
-                        else title2Div.textContent = 'Başlık 2';
+                        else title2Div.textContent = 'Title 2';
                         title2Div.style.fontSize = (config.title2.fontSize || 12) + 'px';
                         title2Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title2Div.classList.toggle('wrap', fontTitleWordWrap); title2Div.classList.toggle('normal', !fontTitleWordWrap);
                         previewSlide.appendChild(title2Div);
@@ -1908,7 +1908,7 @@
                             labelDiv.style.width = (labelConfig.width * inchesToPixels) + 'px'; labelDiv.style.height = (labelConfig.height * inchesToPixels) + 'px';
                             labelDiv.style.fontSize = (labelConfig.fontSize || 12) + 'px';
                             let labelHTML = '<div class="sample-content">';
-                            labelColumns.forEach(col => { labelHTML += `<div><span class="label-bold">${col}:</span> Örnek Değer</div>`; });
+                            labelColumns.forEach(col => { labelHTML += `<div><span class="label-bold">${col}:</span> Sample value</div>`; });
                             labelHTML += '</div>'; labelDiv.innerHTML = labelHTML;
                             previewSlide.appendChild(labelDiv);
                         }
@@ -1921,21 +1921,21 @@
                     const image1Div = document.createElement('div'); image1Div.className = 'preview-image';
                     image1Div.style.left = (config.image1.left * inchesToPixels) + 'px'; image1Div.style.top = (config.image1.top * inchesToPixels) + 'px';
                     image1Div.style.width = (config.image1.width * inchesToPixels) + 'px'; image1Div.style.height = (config.image1.height * inchesToPixels) + 'px';
-                    const sampleImage1 = document.createElement('div'); sampleImage1.className = 'sample-image'; sampleImage1.textContent = selectedColumns[0] || 'Resim 1';
+                    const sampleImage1 = document.createElement('div'); sampleImage1.className = 'sample-image'; sampleImage1.textContent = selectedColumns[0] || 'Image 1';
                     image1Div.appendChild(sampleImage1); previewSlide.appendChild(image1Div);
                 }
                 if (config.image2) {
                     const image2Div = document.createElement('div'); image2Div.className = 'preview-image';
                     image2Div.style.left = (config.image2.left * inchesToPixels) + 'px'; image2Div.style.top = (config.image2.top * inchesToPixels) + 'px';
                     image2Div.style.width = (config.image2.width * inchesToPixels) + 'px'; image2Div.style.height = (config.image2.height * inchesToPixels) + 'px';
-                    const sampleImage2 = document.createElement('div'); sampleImage2.className = 'sample-image'; sampleImage2.textContent = selectedColumns[1] || 'Resim 2';
+                    const sampleImage2 = document.createElement('div'); sampleImage2.className = 'sample-image'; sampleImage2.textContent = selectedColumns[1] || 'Image 2';
                     image2Div.appendChild(sampleImage2); previewSlide.appendChild(image2Div);
                 }
                 if (config.image3) {
                     const image3Div = document.createElement('div'); image3Div.className = 'preview-image';
                     image3Div.style.left = (config.image3.left * inchesToPixels) + 'px'; image3Div.style.top = (config.image3.top * inchesToPixels) + 'px';
                     image3Div.style.width = (config.image3.width * inchesToPixels) + 'px'; image3Div.style.height = (config.image3.height * inchesToPixels) + 'px';
-                    const sampleImage3 = document.createElement('div'); sampleImage3.className = 'sample-image'; sampleImage3.textContent = selectedColumns[2] || 'Resim 3';
+                    const sampleImage3 = document.createElement('div'); sampleImage3.className = 'sample-image'; sampleImage3.textContent = selectedColumns[2] || 'Image 3';
                     image3Div.appendChild(sampleImage3); previewSlide.appendChild(image3Div);
                 }
                 if (useColumnTitles || captionColumns.length > 0) {
@@ -1943,7 +1943,7 @@
                         const title1Div = document.createElement('div'); title1Div.className = 'preview-title';
                         title1Div.style.left = (config.title1.left * inchesToPixels) + 'px'; title1Div.style.top = (config.title1.top * inchesToPixels) + 'px';
                         title1Div.style.width = (config.title1.width * inchesToPixels) + 'px'; title1Div.style.height = (config.title1.height * inchesToPixels) + 'px';
-                        title1Div.textContent = (captionColumns.length > 0) ? captionColumns.map(() => `Örnek Değer`).join('\n') : (selectedColumns[0] || 'Başlık 1');
+                        title1Div.textContent = (captionColumns.length > 0) ? captionColumns.map(() => `Sample value`).join('\n') : (selectedColumns[0] || 'Title 1');
                         title1Div.style.fontSize = (config.title1.fontSize || 12) + 'px';
                         title1Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title1Div.classList.toggle('wrap', fontTitleWordWrap); title1Div.classList.toggle('normal', !fontTitleWordWrap);
                         previewSlide.appendChild(title1Div);
@@ -1952,7 +1952,7 @@
                         const title2Div = document.createElement('div'); title2Div.className = 'preview-title';
                         title2Div.style.left = (config.title2.left * inchesToPixels) + 'px'; title2Div.style.top = (config.title2.top * inchesToPixels) + 'px';
                         title2Div.style.width = (config.title2.width * inchesToPixels) + 'px'; title2Div.style.height = (config.title2.height * inchesToPixels) + 'px';
-                        title2Div.textContent = (captionColumns.length > 0) ? captionColumns.map(() => `Örnek Değer`).join('\n') : (selectedColumns[1] || 'Başlık 2');
+                        title2Div.textContent = (captionColumns.length > 0) ? captionColumns.map(() => `Sample value`).join('\n') : (selectedColumns[1] || 'Title 2');
                         title2Div.style.fontSize = (config.title2.fontSize || 12) + 'px';
                         title2Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title2Div.classList.toggle('wrap', fontTitleWordWrap); title2Div.classList.toggle('normal', !fontTitleWordWrap);
                         previewSlide.appendChild(title2Div);
@@ -1961,7 +1961,7 @@
                         const title3Div = document.createElement('div'); title3Div.className = 'preview-title';
                         title3Div.style.left = (config.title3.left * inchesToPixels) + 'px'; title3Div.style.top = (config.title3.top * inchesToPixels) + 'px';
                         title3Div.style.width = (config.title3.width * inchesToPixels) + 'px'; title3Div.style.height = (config.title3.height * inchesToPixels) + 'px';
-                        title3Div.textContent = (captionColumns.length > 0) ? captionColumns.map(() => `Örnek Değer`).join('\n') : (selectedColumns[2] || 'Başlık 3');
+                        title3Div.textContent = (captionColumns.length > 0) ? captionColumns.map(() => `Sample value`).join('\n') : (selectedColumns[2] || 'Title 3');
                         title3Div.style.fontSize = (config.title3.fontSize || 12) + 'px';
                         title3Div.style.fontWeight = fontTitleBold ? 'bold' : 'normal'; title3Div.classList.toggle('wrap', fontTitleWordWrap); title3Div.classList.toggle('normal', !fontTitleWordWrap);
                         previewSlide.appendChild(title3Div);
@@ -1978,7 +1978,7 @@
                             labelDiv.style.width = (labelConfig.width * inchesToPixels) + 'px'; labelDiv.style.height = (labelConfig.height * inchesToPixels) + 'px';
                             labelDiv.style.fontSize = (labelConfig.fontSize || 12) + 'px';
                             let labelHTML = '<div class="sample-content">';
-                            labelColumns.forEach(col => { labelHTML += `<div><span class="label-bold">${col}:</span> Örnek Değer</div>`; });
+                            labelColumns.forEach(col => { labelHTML += `<div><span class="label-bold">${col}:</span> Sample value</div>`; });
                             labelHTML += '</div>'; labelDiv.innerHTML = labelHTML;
                             previewSlide.appendChild(labelDiv);
                         }
@@ -2039,7 +2039,7 @@
             const progressText = document.getElementById('progressText');
             
             createButton.disabled = true;
-            createButton.textContent = 'Sunum Oluşturuluyor...';
+            createButton.textContent = 'Generating presentation...';
             progressContainer.style.display = 'block';
             
             let progress = 0;
@@ -2048,9 +2048,9 @@
                 if (progress <= 90) {
                     progressFill.style.width = progress + '%';
                     progressPercent.textContent = '%' + progress;
-                    if (progress < 30) progressText.textContent = 'Excel dosyası okunuyor...';
-                    else if (progress < 60) progressText.textContent = 'Resimler indiriliyor...';
-                    else progressText.textContent = 'Sunum oluşturuluyor...';
+                    if (progress < 30) progressText.textContent = 'Reading Excel...';
+                    else if (progress < 60) progressText.textContent = 'Downloading images...';
+                    else progressText.textContent = 'Building presentation...';
                 }
             }, 100);
             
@@ -2065,14 +2065,14 @@
                     return null;
                 }
                 if (response.ok) return response.blob();
-                else return response.json().then(data => { throw new Error(data.error || 'Sunum oluşturulurken hata oluştu'); });
+                else return response.json().then(data => { throw new Error(data.error || 'An error occurred while creating the presentation'); });
             })
             .then(blob => {
                 if (!blob) return;
                 clearInterval(progressInterval);
                 progressFill.style.width = '100%';
                 progressPercent.textContent = '%100';
-                progressText.textContent = 'Sunum hazır! İndiriliyor...';
+                progressText.textContent = 'Presentation ready! Downloading...';
                 setTimeout(() => {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -2083,18 +2083,18 @@
                     a.click();
                     window.URL.revokeObjectURL(url);
                     createButton.disabled = false;
-                    createButton.textContent = 'Sunumu Oluştur ve İndir';
+                    createButton.textContent = 'Generate Presentation';
                     progressContainer.style.display = 'none';
-                    alert('Sunum başarıyla oluşturuldu ve indiriliyor!');
+                    alert('Slide generated successfully');
                 }, 1000);
             })
             .catch(error => {
                 console.error('Error:', error);
                 clearInterval(progressInterval);
                 createButton.disabled = false;
-                createButton.textContent = 'Sunumu Oluştur ve İndir';
+                createButton.textContent = 'Generate Presentation';
                 progressContainer.style.display = 'none';
-                alert('Hata: ' + error.message);
+                alert('Error: ' + error.message);
             });
         }
         

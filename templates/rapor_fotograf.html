@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapordan Fotoğraf</title>
+    <title>Photo Extractor</title>
     <style>
         :root {
             --bg: #f0f2f8;
@@ -289,79 +289,79 @@
 </head>
 <body>
     <nav class="rf-nav">
-        <a href="{{ url_for('dashboard') }}">← Ana sayfa</a>
-        <span class="rf-nav-title">Rapordan Fotoğraf</span>
+        <a href="{{ url_for('dashboard') }}">← Dashboard</a>
+        <span class="rf-nav-title">Photo Extractor</span>
         <span style="display:flex;gap:14px;align-items:center;">
-            <a href="{{ url_for('sunum_app') }}" style="font-weight:600;">Rapordan Sunum</a>
+            <a href="{{ url_for('sunum_app') }}" style="font-weight:600;">Slide Generator</a>
             {% if is_authenticated %}
-            <a href="{{ url_for('logout') }}" title="{{ current_user_email }}">Çıkış</a>
+            <a href="{{ url_for('logout') }}" title="{{ current_user_email }}">Log out</a>
             {% endif %}
         </span>
     </nav>
 
     <main class="rf-main">
         <div class="rf-panel rf-left-col">
-            <h2>Sol — Sayfa ve sütun seçimi</h2>
-            <p class="rf-hint">Sağdan Excel yükledikten sonra burada tüm <strong>sheet</strong>’ler görünür. Fotoğraf <strong>URL</strong> sütunlarını ve dosya adına eklenecek <strong>başlık</strong> sütunlarını işaretleyin.</p>
+            <h2>Left — Sheet and column selection</h2>
+            <p class="rf-hint">After you upload an Excel file on the right, all <strong>sheets</strong> appear here. Select the photo <strong>URL</strong> columns and the <strong>label</strong> columns to include in the file name.</p>
 
-            <div class="rf-section-title" style="margin-top:0;">Sayfalar ve fotoğraf URL sütunları</div>
-            <p class="rf-hint" style="margin-top:0;">Sayfanın solundaki kutuyu kapatırsanız o sayfa işlenmez. Birden fazla URL sütunu seçebilirsiniz.</p>
+            <div class="rf-section-title" style="margin-top:0;">Sheets and photo URL columns</div>
+            <p class="rf-hint" style="margin-top:0;">Uncheck a sheet on the left to skip it. You can select multiple URL columns.</p>
             <div class="rf-dynamic" id="rfSheetColumns"></div>
 
-            <div class="rf-section-title">Dosya adına eklenecek başlıklar</div>
-            <p class="rf-hint" style="margin-top:0;">Aynı satırdaki değerler dosya adına eklenir (ör. Mağaza + Şehir). Excel yüklenince sütun listesi dolur.</p>
+            <div class="rf-section-title">Labels for file names</div>
+            <p class="rf-hint" style="margin-top:0;">Values from the same row are added to the file name (e.g. Store + City). The column list fills in after you upload Excel.</p>
             <div class="rf-dynamic" id="rfFilenameCols"></div>
         </div>
 
         <div class="rf-panel rf-right-col">
-            <h2>Sağ — Excel ve indirme</h2>
-            <p class="rf-hint"><strong>.xlsx</strong> / <strong>.xls</strong> yükleyin. <strong>İndir</strong> tek adımdır: önce kaç fotoğraf URL’si olduğu sayılır, sunucu ZIP üretir, dosya otomatik iner (ek izin yok). <strong>Klasöre kaydet</strong> için yalnızca klasör seçimi gerekir.</p>
+            <h2>Right — Excel and download</h2>
+            <p class="rf-hint">Upload <strong>.xlsx</strong> / <strong>.xls</strong>. <strong>Download</strong> is one step: photo URLs are counted, the server builds a ZIP, and the file downloads automatically (no extra permission). <strong>Save to folder</strong> only requires choosing a folder.</p>
 
             <div class="rf-drop" id="rfDrop">
-                <p>Excel dosyasını seçin veya sürükleyin</p>
+                <p>Select a file or drag and drop</p>
                 <input type="file" id="rfFile" accept=".xlsx,.xls">
             </div>
             <div class="rf-btn-row">
-                <button type="button" class="rf-btn rf-btn-primary" id="rfUploadBtn" disabled>Dosyayı yükle</button>
-                <button type="button" class="rf-btn rf-btn-ghost" id="rfClearBtn" disabled>Temizle</button>
+                <button type="button" class="rf-btn rf-btn-primary" id="rfUploadBtn" disabled>Upload</button>
+                <button type="button" class="rf-btn rf-btn-ghost" id="rfClearBtn" disabled>Clear</button>
             </div>
             <div id="rfUploadStatus" class="rf-status"></div>
 
-            <div class="rf-section-title">Çıktı</div>
+            <div class="rf-section-title">Output</div>
             <div class="rf-out-mode" id="rfOutMode">
                 <label class="opt">
                     <input type="radio" name="rfOut" value="zip" checked>
-                    <span><strong>ZIP olarak indir</strong> — Tek dosya; açtığınızda her sayfa ayrı klasördedir.</span>
+                    <span><strong>Download as ZIP</strong> — Single file; each sheet is in its own folder when opened.</span>
                 </label>
                 <label class="opt">
                     <input type="radio" name="rfOut" value="folder">
-                    <span><strong>Seçtiğim klasöre kaydet</strong> — Alt klasörler sayfa adlarıyla oluşturulur.</span>
+                    <span><strong>Save to folder</strong> — Subfolders are created with sheet names.</span>
                 </label>
                 <div class="rf-browser-row" id="rfBrowserWrap">
-                    <button type="button" class="rf-btn rf-btn-ghost" id="rfPickFolderBtn">İndirilecek klasörü seç</button>
+                    <button type="button" class="rf-btn rf-btn-ghost" id="rfPickFolderBtn">Choose download folder</button>
                     <span id="rfFolderStatus"></span>
-                    <p class="rf-path-hint">Tarayıcı güvenliği nedeniyle hedef klasörü bir kez onaylamanız gerekir.</p>
+                    <p class="rf-path-hint">Browser security requires you to approve the destination folder once.</p>
                 </div>
             </div>
 
-            <div class="rf-section-title">Seçenekler</div>
+            <div class="rf-section-title">Options</div>
             <label class="opt" style="margin-top:0;">
                 <input type="checkbox" id="rfOverlayLabels">
-                <span><strong>Resmin içine etiket ekle</strong> — Sol altta; her başlık <strong>ayrı satırda</strong> (ör. Mağaza: … / Şehir: …).</span>
+                <span><strong>Overlay labels on images</strong> — Bottom left; each label on a <strong>separate line</strong> (e.g. Store: … / City: …).</span>
             </label>
-            <p class="rf-overlay-hint">Sol tarafta işaretlediğiniz başlıklar kullanılır; hiçbiri yoksa sütun adı ve satır numarası yazılır.</p>
+            <p class="rf-overlay-hint">Uses the labels you selected on the left; if none are selected, the column name and row number are used.</p>
 
-            <div class="rf-section-title">İşlem</div>
+            <div class="rf-section-title">Action</div>
             <div class="rf-btn-row">
-                <button type="button" class="rf-btn rf-btn-primary" id="rfRunBtn" disabled>İndir</button>
+                <button type="button" class="rf-btn rf-btn-primary" id="rfRunBtn" disabled>Download</button>
             </div>
 
             <div class="rf-progress-wrap">
                 <div class="rf-progress" id="rfProgress"><div class="rf-progress-bar" id="rfProgressBar"></div></div>
                 <div class="rf-progress-label" id="rfProgressLabel"></div>
             </div>
-            <div class="rf-section-title">Günlük</div>
-            <div class="rf-log empty" id="rfLog">Henüz kayıt yok. Dosya yükleyip işlemi başlatın.</div>
+            <div class="rf-section-title">Activity log</div>
+            <div class="rf-log empty" id="rfLog">No entries yet. Upload a file and start the process.</div>
         </div>
     </main>
 
@@ -378,7 +378,7 @@
                 box.classList.remove('empty');
                 box.textContent = '';
             }
-            const line = (isError ? '[HATA] ' : '') + (typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2));
+            const line = (isError ? '[ERROR] ' : '') + (typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2));
             box.textContent += (box.textContent ? '\n' : '') + line;
             box.scrollTop = box.scrollHeight;
         };
@@ -440,7 +440,7 @@
                 const meta = document.createElement('span');
                 meta.style.fontSize = '0.75rem';
                 meta.style.color = 'var(--muted)';
-                meta.textContent = cols.length + ' sütun';
+                meta.textContent = cols.length + ' column(s)';
                 head.appendChild(lab);
                 head.appendChild(meta);
 
@@ -448,7 +448,7 @@
                 body.className = 'rf-sheet-cols';
                 const st = document.createElement('div');
                 st.className = 'rf-sheet-cols-title';
-                st.textContent = 'Fotoğraf URL sütunları (birden fazla işaretleyebilirsiniz)';
+                st.textContent = 'Photo URL columns (you can select more than one)';
                 body.appendChild(st);
                 const grid = document.createElement('div');
                 grid.className = 'rf-col-grid';
@@ -478,7 +478,7 @@
             if (!cols.length) return;
             const st = document.createElement('div');
             st.className = 'rf-sheet-cols-title';
-            st.textContent = 'Dosya adına eklenecek başlıklar (çoklu seçim)';
+            st.textContent = 'Labels for file names (multi-select)';
             host.appendChild(st);
             const grid = document.createElement('div');
             grid.className = 'rf-col-grid';
@@ -523,12 +523,12 @@
 
         el('rfPickFolderBtn').addEventListener('click', async () => {
             if (!window.showDirectoryPicker) {
-                log('Klasöre doğrudan kayıt için Chrome veya Edge kullanın.', true);
+                log('Use Chrome or Edge to save directly to a folder.', true);
                 return;
             }
             try {
                 dirHandle = await window.showDirectoryPicker();
-                el('rfFolderStatus').textContent = 'Klasör seçildi. «İndir» ile devam edin.';
+                el('rfFolderStatus').textContent = 'Folder selected. Continue with «Download».';
             } catch (e) {
                 if (e && e.name !== 'AbortError') log(String(e), true);
             }
@@ -541,7 +541,7 @@
         }
 
         /**
-         * Tek POST: ZIP yanıtı. Sunucu işi bitene kadar süre uzun; yanıt gövdesi gelirken onprogress ile çubuk güncellenir.
+         * Single POST: ZIP response. Server work can take a while; progress bar updates via onprogress as the body arrives.
          */
         function xhrPostProcessZip(payload, onDownloadProgress) {
             return new Promise((resolve, reject) => {
@@ -557,7 +557,7 @@
                 xhr.onload = () => {
                     if (xhr.status === 401) {
                         window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
-                        reject(new Error('Oturum gerekli'));
+                        reject(new Error('Sign-in required'));
                         return;
                     }
                     const ct = (xhr.getResponseHeader('Content-Type') || '').toLowerCase();
@@ -566,12 +566,12 @@
                         rd.onload = () => {
                             try {
                                 const j = JSON.parse(rd.result);
-                                reject(new Error(j.error || 'Sunucu hatası'));
+                                reject(new Error(j.error || 'Server error'));
                             } catch {
-                                reject(new Error('Sunucu hatası'));
+                                reject(new Error('Server error'));
                             }
                         };
-                        rd.onerror = () => reject(new Error('Sunucu yanıtı okunamadı'));
+                        rd.onerror = () => reject(new Error('Could not read server response'));
                         rd.readAsText(xhr.response);
                         return;
                     }
@@ -582,10 +582,10 @@
                             contentDisposition: xhr.getResponseHeader('Content-Disposition'),
                         });
                     } else {
-                        reject(new Error(xhr.statusText || 'İstek başarısız'));
+                        reject(new Error(xhr.statusText || 'Request failed'));
                     }
                 };
-                xhr.onerror = () => reject(new Error('Ağ hatası — sunucu çalışıyor mu?'));
+                xhr.onerror = () => reject(new Error('Network error — is the server running?'));
                 xhr.send(JSON.stringify(payload));
             });
         }
@@ -600,7 +600,7 @@
         }
 
         async function writeZipToDirectory(zipBlob, handle, onFileProgress) {
-            if (typeof JSZip === 'undefined') throw new Error('JSZip yüklenemedi.');
+            if (typeof JSZip === 'undefined') throw new Error('JSZip failed to load.');
             const zip = await JSZip.loadAsync(zipBlob);
             const entries = Object.entries(zip.files).filter(([, e]) => !e.dir);
             let done = 0;
@@ -664,13 +664,13 @@
             if (!currentFile) return;
             const fd = new FormData();
             fd.append('file', currentFile);
-            setUploadStatus('Yükleniyor…', undefined);
+            setUploadStatus('Uploading…', undefined);
             setProgress(30);
             fetch('/upload', { method: 'POST', body: fd })
                 .then((r) => {
                     if (r.status === 401) {
                         window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
-                        return Promise.reject(new Error('Oturum gerekli'));
+                        return Promise.reject(new Error('Sign-in required'));
                     }
                     return r.json().then((j) => ({ ok: r.ok, j }));
                 })
@@ -678,17 +678,17 @@
                     setProgress(100);
                     setTimeout(() => setProgress(null), 400);
                     if (!ok || j.error) {
-                        setUploadStatus(j.error || 'Yükleme başarısız', false);
-                        log(j.error || 'Yükleme hatası', true);
+                        setUploadStatus(j.error || 'Upload failed', false);
+                        log(j.error || 'Upload error', true);
                         return;
                     }
                     serverFilename = j.filename;
                     sheetsData = j.sheets_data || {};
-                    setUploadStatus('Dosya hazır: ' + j.filename, true);
+                    setUploadStatus('File ready: ' + j.filename, true);
                     buildSheetColumnUI(j.sheets || [], sheetsData);
                     buildFilenameColumnUI(j.sheets || [], sheetsData);
                     el('rfRunBtn').disabled = false;
-                    log('Yükleme tamam. Sayfalar: ' + (j.sheets || []).join(', '));
+                    log('Upload complete. Sheets: ' + (j.sheets || []).join(', '));
                 })
                 .catch((e) => {
                     setProgress(null);
@@ -702,12 +702,12 @@
             const columnsBySheet = collectColumnsBySheet();
             const keys = Object.keys(columnsBySheet);
             if (keys.length === 0) {
-                log('En az bir sayfada ve o sayfada en az bir fotoğraf sütunu seçmelisiniz.', true);
+                log('Select at least one photo column on at least one sheet.', true);
                 return;
             }
             const mode = document.querySelector('input[name="rfOut"]:checked').value;
             if (mode === 'folder' && !dirHandle) {
-                log('Önce «İndirilecek klasörü seç» ile hedef klasörü seçin.', true);
+                log('First choose a destination folder with «Choose download folder».', true);
                 return;
             }
             const payload = {
@@ -719,10 +719,10 @@
                 }
             };
             el('rfRunBtn').disabled = true;
-            log('İşlem başlıyor…');
+            log('Starting…');
             try {
                 setProgressBusy();
-                setProgressMeta('Fotoğraf URL’leri sayılıyor…');
+                setProgressMeta('Counting photo URLs…');
                 const cntRes = await fetch('/api/rapor-fotograf/count', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -731,15 +731,15 @@
                 const cntJ = await cntRes.json().catch(() => ({}));
                 if (!cntRes.ok) {
                     setProgress(null);
-                    log(cntJ.error || 'Sayım başarısız', true);
+                    log(cntJ.error || 'Count failed', true);
                     return;
                 }
                 const totalUrls = typeof cntJ.total === 'number' ? cntJ.total : 0;
                 setProgressBusy();
                 setProgressMeta(
                     totalUrls
-                        ? totalUrls + ' fotoğraf — sunucuda hazırlanıyor (ZIP oluşunca inecek)…'
-                        : 'Sunucuda hazırlanıyor…'
+                        ? totalUrls + ' photo(s) — preparing on server (download starts when ZIP is ready)…'
+                        : 'Preparing on server…'
                 );
 
                 const result = await xhrPostProcessZip(payload, (loaded, totalB) => {
@@ -747,14 +747,14 @@
                         const pct = 12 + Math.floor((loaded / totalB) * 83);
                         setProgress(Math.min(96, pct));
                         setProgressMeta(
-                            'ZIP alınıyor: ' + fmtBytes(loaded) + ' / ' + fmtBytes(totalB)
+                            'Receiving ZIP: ' + fmtBytes(loaded) + ' / ' + fmtBytes(totalB)
                         );
                     } else {
                         setProgressBusy();
                         setProgressMeta(
                             totalUrls
-                                ? totalUrls + ' fotoğraf işlendi; ZIP oluşturuluyor…'
-                                : 'ZIP oluşturuluyor, lütfen bekleyin…'
+                                ? totalUrls + ' photo(s) processed; creating ZIP…'
+                                : 'Creating ZIP, please wait…'
                         );
                     }
                 });
@@ -765,17 +765,17 @@
 
                 if (mode === 'folder') {
                     setProgress(97);
-                    setProgressMeta('Klasöre yazılıyor…');
+                    setProgressMeta('Writing to folder…');
                     let lastD = 1;
                     await writeZipToDirectory(blob, dirHandle, (n, d) => {
                         lastD = d;
                         const p = 97 + Math.round((n / d) * 3);
                         setProgress(Math.min(100, p));
-                        setProgressMeta('Klasöre yazılıyor: ' + n + ' / ' + d + ' dosya');
+                        setProgressMeta('Writing to folder: ' + n + ' / ' + d + ' file(s)');
                     });
                     setProgress(100);
-                    setProgressMeta('Bitti: ' + saved + ' fotoğraf kaydedildi.');
-                    log('Klasöre yazıldı (' + saved + ' fotoğraf, ' + lastD + ' dosya).');
+                    setProgressMeta('Done: ' + saved + ' photo(s) saved.');
+                    log('Written to folder (' + saved + ' photo(s), ' + lastD + ' file(s)).');
                 } else {
                     const u = URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -787,13 +787,13 @@
                     document.body.removeChild(a);
                     setTimeout(() => URL.revokeObjectURL(u), 60 * 1000);
                     setProgress(100);
-                    setProgressMeta('İndirildi: ' + saved + ' fotoğraf');
-                    log('ZIP indirildi: ' + zipName + ' (' + saved + ' fotoğraf).');
+                    setProgressMeta('Downloaded: ' + saved + ' photo(s)');
+                    log('ZIP downloaded: ' + zipName + ' (' + saved + ' photo(s)).');
                 }
                 setTimeout(() => setProgress(null), 1800);
             } catch (e) {
                 setProgress(null);
-                log('[HATA] ' + (e && e.message ? e.message : String(e)), true);
+                log('[ERROR] ' + (e && e.message ? e.message : String(e)), true);
             } finally {
                 el('rfRunBtn').disabled = false;
             }

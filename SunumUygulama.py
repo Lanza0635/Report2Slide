@@ -185,7 +185,7 @@ def add_image_to_slide(slide, img_url, presentation_type, image_index, config, i
             slide.shapes.add_picture(tmp_path, left, top, width, height)
             os.unlink(tmp_path)
         else:
-            raise Exception("Resim içeriği boş")
+            raise Exception("Empty image content")
 
     except Exception as e:
         placeholder = slide.shapes.add_shape(1, left, top, width, height)
@@ -193,7 +193,7 @@ def add_image_to_slide(slide, img_url, presentation_type, image_index, config, i
         placeholder.fill.fore_color.rgb = RGBColor(230, 230, 230)
         textbox = slide.shapes.add_textbox(left, top + height, width, Inches(0.5))
         textframe = textbox.text_frame
-        textframe.text = "Resim yüklenemedi"
+        textframe.text = "Image failed to load"
         textframe.paragraphs[0].font.size = Pt(10)
         textframe.paragraphs[0].font.color.rgb = RGBColor(100, 100, 100)
         textframe.paragraphs[0].alignment = PP_ALIGN.CENTER
@@ -389,11 +389,11 @@ def register():
         password = request.form.get('password') or ''
         password2 = request.form.get('password2') or ''
         if not email or not password:
-            error = 'E-posta ve şifre zorunludur.'
+            error = 'Email and password are required.'
         elif password != password2:
-            error = 'Şifreler eşleşmiyor.'
+            error = 'Passwords do not match.'
         elif len(password) < 6:
-            error = 'Şifre en az 6 karakter olmalıdır.'
+            error = 'Password must be at least 6 characters.'
         else:
             try:
                 sb = get_supabase()
@@ -417,8 +417,8 @@ def register():
                         ensure_profile(str(user.id), getattr(user, "email", None) or email)
                     except Exception:
                         pass
-                    return redirect(url_for('login', message='Kayıt alındı. E-posta doğrulaması gerekiyorsa onaylayıp giriş yapın.'))
-                error = 'Kayıt tamamlanamadı. Lütfen tekrar deneyin.'
+                    return redirect(url_for('login', message='Registration received. If email confirmation is required, please verify and then log in.'))
+                error = 'Registration could not be completed. Please try again.'
             except Exception as e:
                 error = auth_error_message(e)
     return render_template('register.html', error=error, email=email)
@@ -436,7 +436,7 @@ def login():
         email = (request.form.get('email') or '').strip()
         password = request.form.get('password') or ''
         if not email or not password:
-            error = 'E-posta ve şifre zorunludur.'
+            error = 'Email and password are required.'
         else:
             try:
                 sb = get_supabase()
@@ -444,7 +444,7 @@ def login():
                 user = getattr(result, "user", None)
                 sess = getattr(result, "session", None)
                 if not user or not sess:
-                    error = 'Giriş başarısız. Bilgilerinizi kontrol edin.'
+                    error = 'Login failed. Please check your credentials.'
                 else:
                     set_user_session(
                         user,
@@ -555,12 +555,12 @@ def rapor_fotograf_count():
     filename = data.get('filename')
     options = data.get('options') or {}
     if not filename:
-        return jsonify({'error': 'Dosya adı gerekli'}), 400
+        return jsonify({'error': 'Filename is required'}), 400
     upload_dir = user_upload_dir()
     safe = secure_filename(filename)
     filepath = os.path.join(upload_dir, safe)
     if not os.path.isfile(filepath):
-        return jsonify({'error': 'Dosya bulunamadı. Önce Excel dosyasını yükleyin.'}), 400
+        return jsonify({'error': 'File not found. Please upload an Excel file first.'}), 400
     try:
         from rapor_fotograf_logic import count_photo_urls_for_options
 
@@ -577,12 +577,12 @@ def rapor_fotograf_process():
     filename = data.get('filename')
     options = data.get('options') or {}
     if not filename:
-        return jsonify({'error': 'Dosya adı gerekli'}), 400
+        return jsonify({'error': 'Filename is required'}), 400
     upload_dir = user_upload_dir()
     safe = secure_filename(filename)
     filepath = os.path.join(upload_dir, safe)
     if not os.path.isfile(filepath):
-        return jsonify({'error': 'Dosya bulunamadı. Önce Excel dosyasını yükleyin.'}), 400
+        return jsonify({'error': 'File not found. Please upload an Excel file first.'}), 400
     try:
         from rapor_fotograf_logic import run_photo_extraction
         result = run_photo_extraction(upload_dir, safe, options)
@@ -619,7 +619,7 @@ def rapor_fotograf_process():
                 download_name=str(download_name),
                 mimetype='application/octet-stream',
             )
-    return jsonify({'error': 'run_photo_extraction geçersiz dönüş (str dosya yolu veya (bytes, ad) beklenir)'}), 500
+    return jsonify({'error': 'Invalid response from photo extraction (expected file path or bytes payload)'}), 500
 
 
 @app.route('/api/rapor-fotograf/process-stream', methods=['POST'])
@@ -629,12 +629,12 @@ def rapor_fotograf_process_stream():
     filename = data.get('filename')
     options = data.get('options') or {}
     if not filename:
-        return jsonify({'error': 'Dosya adı gerekli'}), 400
+        return jsonify({'error': 'Filename is required'}), 400
     upload_dir = user_upload_dir()
     safe = secure_filename(filename)
     filepath = os.path.join(upload_dir, safe)
     if not os.path.isfile(filepath):
-        return jsonify({'error': 'Dosya bulunamadı. Önce Excel dosyasını yükleyin.'}), 400
+        return jsonify({'error': 'File not found. Please upload an Excel file first.'}), 400
 
     def generate():
         from rapor_fotograf_logic import iter_photo_extraction
@@ -671,11 +671,11 @@ def rapor_fotograf_process_stream():
 @pro_required
 def rapor_fotograf_download_token(token: str):
     if not token or any(c in token for c in ('/', '\\', '..')):
-        return jsonify({'error': 'Geçersiz indirme bağlantısı.'}), 400
+        return jsonify({'error': 'Invalid download link.'}), 400
     upload_dir = user_upload_dir()
     path = os.path.join(upload_dir, '_rf_pending', token + '.zip')
     if not os.path.isfile(path):
-        return jsonify({'error': 'Geçersiz veya süresi dolmuş indirme.'}), 404
+        return jsonify({'error': 'Invalid or expired download.'}), 404
     resp = send_file(
         path,
         as_attachment=True,
@@ -696,9 +696,9 @@ def rapor_fotograf_download_token(token: str):
 @app.route('/upload', methods=['POST'])
 @pro_required
 def upload_file():
-    if 'file' not in request.files: return jsonify({'error': 'Dosya seçilmedi'}), 400
+    if 'file' not in request.files: return jsonify({'error': 'No file selected'}), 400
     file = request.files['file']
-    if file.filename == '': return jsonify({'error': 'Dosya seçilmedi'}), 400
+    if file.filename == '': return jsonify({'error': 'No file selected'}), 400
     
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -714,8 +714,8 @@ def upload_file():
                 sheets_data[sheet] = df.columns.tolist()
             return jsonify({'filename': filename, 'sheets': sheet_names, 'sheets_data': sheets_data})
         except Exception as e:
-            return jsonify({'error': f'Excel dosyası okunamadı: {str(e)}'}), 500
-    return jsonify({'error': 'Geçersiz dosya formatı'}), 400
+            return jsonify({'error': f'Could not read Excel file: {str(e)}'}), 500
+    return jsonify({'error': 'Invalid file format'}), 400
 
 @app.route('/create_presentation', methods=['POST'])
 @pro_required
@@ -741,12 +741,12 @@ def create_presentation():
     background_image_data = data.get('background_image_data')
 
     if not filename:
-        return jsonify({'error': 'Dosya adı gerekli'}), 400
+        return jsonify({'error': 'Filename is required'}), 400
     safe_name = secure_filename(filename)
     upload_dir = user_upload_dir()
     filepath = os.path.join(upload_dir, safe_name)
     if not os.path.isfile(filepath):
-        return jsonify({'error': 'Dosya bulunamadı. Önce Excel dosyasını yükleyin.'}), 400
+        return jsonify({'error': 'File not found. Please upload an Excel file first.'}), 400
     
     temp_bg_path = None
     try:
@@ -779,7 +779,7 @@ def create_presentation():
             if group_by_name and grouping_column and grouping_column in df.columns:
                 grouped_data = defaultdict(list)
                 for index, row in df.iterrows():
-                    group_name = row[grouping_column] if pd.notna(row[grouping_column]) else "Diğer"
+                    group_name = row[grouping_column] if pd.notna(row[grouping_column]) else "Other"
                     grouped_data[group_name].append(row)
                 
                 for group_name, rows in grouped_data.items():
@@ -976,7 +976,7 @@ def create_presentation():
     
     except Exception as e:
         if temp_bg_path and os.path.exists(temp_bg_path): os.unlink(temp_bg_path)
-        return jsonify({'error': f'Sunum oluşturulamadı: {str(e)}'}), 500
+        return jsonify({'error': f'Could not generate presentation: {str(e)}'}), 500
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']

@@ -32,7 +32,7 @@ def _safe_segment(name: str, max_len: int = 120) -> str:
         s = s.replace(c, "_")
     s = s.strip().strip(".")
     if not s:
-        s = "sayfa"
+        s = "sheet"
     return s[:max_len]
 
 
@@ -84,7 +84,7 @@ def _download(url: str, session: requests.Session) -> tuple[bytes | None, str | 
         r.raise_for_status()
         data = r.content
         if not data:
-            return None, "boş yanıt"
+            return None, "empty response"
         return data, r.headers.get("Content-Type")
     except Exception as e:
         return None, str(e)
@@ -101,7 +101,7 @@ def _download_parallel(url: str) -> tuple[bytes | None, str | None]:
         r.raise_for_status()
         data = r.content
         if not data:
-            return None, "boş yanıt"
+            return None, "empty response"
         return data, r.headers.get("Content-Type")
     except Exception as e:
         return None, str(e)
@@ -242,11 +242,11 @@ def count_photo_urls_for_options(upload_folder: str, filename: str, options: dic
     """Seçimlere göre Excel’deki toplam fotoğraf URL sayısı (işlemden önce hızlı sayım)."""
     filepath = os.path.join(upload_folder, filename)
     if not os.path.isfile(filepath):
-        raise FileNotFoundError(f"Dosya bulunamadı: {filepath}")
+        raise FileNotFoundError(f"File not found: {filepath}")
 
     columns_by_sheet: dict = options.get("columns_by_sheet") or {}
     if not isinstance(columns_by_sheet, dict) or not columns_by_sheet:
-        raise ValueError("En az bir sayfa için fotoğraf sütunu seçmelisiniz.")
+        raise ValueError("Select at least one photo column for one or more sheets.")
 
     columns_by_sheet = {
         k: [c for c in (v or []) if c] for k, v in columns_by_sheet.items() if v
@@ -254,7 +254,7 @@ def count_photo_urls_for_options(upload_folder: str, filename: str, options: dic
     columns_by_sheet = {k: v for k, v in columns_by_sheet.items() if v}
     if not columns_by_sheet:
         raise ValueError(
-            "Her sayfa için en az bir sütun seçin veya sayfayı devre dışı bırakın."
+            "Select at least one column per included sheet, or disable the sheet."
         )
 
     xl = pd.ExcelFile(filepath)
@@ -283,12 +283,12 @@ def iter_photo_extraction(upload_folder: str, filename: str, options: dict) -> I
     """
     filepath = os.path.join(upload_folder, filename)
     if not os.path.isfile(filepath):
-        yield {"type": "error", "message": f"Dosya bulunamadı: {filepath}"}
+        yield {"type": "error", "message": f"File not found: {filepath}"}
         return
 
     columns_by_sheet: dict = options.get("columns_by_sheet") or {}
     if not isinstance(columns_by_sheet, dict) or not columns_by_sheet:
-        yield {"type": "error", "message": "En az bir sayfa için fotoğraf sütunu seçmelisiniz."}
+        yield {"type": "error", "message": "Select at least one photo column for one or more sheets."}
         return
 
     filename_columns = [c for c in (options.get("filename_columns") or []) if c]
@@ -301,7 +301,7 @@ def iter_photo_extraction(upload_folder: str, filename: str, options: dict) -> I
     if not columns_by_sheet:
         yield {
             "type": "error",
-            "message": "Her sayfa için en az bir sütun seçin veya sayfayı devre dışı bırakın.",
+            "message": "Select at least one column per included sheet, or disable the sheet.",
         }
         return
 
@@ -325,7 +325,7 @@ def iter_photo_extraction(upload_folder: str, filename: str, options: dict) -> I
 
         for sheet_name, col_list in columns_by_sheet.items():
             if sheet_name not in available:
-                errors.append(f"Sayfa yok (atlandı): {sheet_name}")
+                errors.append(f"Sheet missing (skipped): {sheet_name}")
                 continue
 
             folder_name = _unique_sheet_folder_name(sheet_name, sheet_folder_used)
@@ -336,7 +336,7 @@ def iter_photo_extraction(upload_folder: str, filename: str, options: dict) -> I
             sheet_dfs[sheet_name] = df
             for col in col_list:
                 if col not in df.columns:
-                    errors.append(f"{sheet_name} / sütun yok: {col}")
+                    errors.append(f"{sheet_name} / column missing: {col}")
                     continue
 
                 col_safe = _safe_segment(col, 60)
@@ -369,7 +369,7 @@ def iter_photo_extraction(upload_folder: str, filename: str, options: dict) -> I
         if not jobs:
             yield {
                 "type": "error",
-                "message": "Hiç fotoğraf indirilemedi. URL içeren hücre ve seçilen sütunları kontrol edin.",
+                "message": "No photos could be downloaded. Check URL cells and selected columns.",
             }
             return
 
@@ -401,9 +401,9 @@ def iter_photo_extraction(upload_folder: str, filename: str, options: dict) -> I
             row = j["row"]
             df = sheet_dfs[sheet_name]
 
-            data, ctype = fetch_out.get(idx, (None, "sonuç yok"))
+            data, ctype = fetch_out.get(idx, (None, "no result"))
             if data is None:
-                errors.append(f"{sheet_name} [{col}] satır {pos}: {ctype or 'indirilemedi'}")
+                errors.append(f"{sheet_name} [{col}] row {pos}: {ctype or 'download failed'}")
                 continue
 
             ext = _guess_ext(url, ctype)
@@ -420,7 +420,7 @@ def iter_photo_extraction(upload_folder: str, filename: str, options: dict) -> I
                 try:
                     data = _apply_overlay(data, o_lines, ext)
                 except Exception as ex:
-                    errors.append(f"{sheet_name} [{col}] satır {pos} etiket: {ex}")
+                    errors.append(f"{sheet_name} [{col}] row {pos} overlay: {ex}")
 
             if fname_prefix:
                 base = f"{fname_prefix}_{col_safe}_{pos:04d}"
@@ -452,7 +452,7 @@ def iter_photo_extraction(upload_folder: str, filename: str, options: dict) -> I
         if saved == 0:
             yield {
                 "type": "error",
-                "message": "Hiç fotoğraf indirilemedi. URL içeren hücre ve seçilen sütunları kontrol edin.",
+                "message": "No photos could be downloaded. Check URL cells and selected columns.",
             }
             return
 
@@ -489,11 +489,11 @@ def run_photo_extraction(upload_folder: str, filename: str, options: dict) -> An
     last_done: dict | None = None
     for ev in iter_photo_extraction(upload_folder, filename, options):
         if ev["type"] == "error":
-            raise ValueError(ev.get("message", "Hata"))
+            raise ValueError(ev.get("message", "Error"))
         if ev["type"] == "done":
             last_done = ev
     if not last_done:
-        raise RuntimeError("İşlem tamamlanmadı.")
+        raise RuntimeError("Processing did not complete.")
     return {
         "mode": "zip",
         "zip_path": last_done["zip_path"],

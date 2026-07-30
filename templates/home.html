@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel Araçları — Giriş</title>
+    <title>Dashboard — Report2Slide</title>
     <style>
         :root {
             --grad-a: #667eea;
@@ -140,28 +140,28 @@
 <body>
     <div class="home-wrap">
         <header class="home-header">
-            <h1>Excel Araçları</h1>
-            <p>Raporlarınızdan sunum oluşturun veya fotoğrafları toplu indirin. Uygulamayı seçerek devam edin.</p>
+            <h1>Report2Slide</h1>
+            <p>Generate presentations from your reports or download photos in bulk. Choose a tool to continue.</p>
         </header>
         <div class="home-cards">
             <article class="home-card">
                 <div class="home-card-icon sunum" aria-hidden="true">📊</div>
-                <h2>Rapordan Sunum</h2>
-                <p>Excel’deki görsel bağlantıları ve metinleri kullanarak PowerPoint sunumu üretin. Tekli, çiftli veya üçlü slayt düzenleri.</p>
+                <h2>Slide Generator</h2>
+                <p>Build PowerPoint decks from Excel image URLs and metadata. Single, double, or triple slide layouts.</p>
                 {% if is_pro %}
-                <a class="btn btn-primary" href="{{ url_for('sunum_app') }}">Sunum oluşturmaya git →</a>
+                <a class="btn btn-primary" href="{{ url_for('sunum_app') }}">Open Slide Generator →</a>
                 {% else %}
-                <a class="btn btn-primary" href="{{ url_for('pricing', reason='pro_required', next='/sunum') }}">Pro ile aç →</a>
+                <a class="btn btn-primary" href="{{ url_for('pricing', reason='pro_required', next='/sunum') }}">Unlock with Pro →</a>
                 {% endif %}
             </article>
             <article class="home-card">
                 <div class="home-card-icon rapor" aria-hidden="true">🖼️</div>
-                <h2>Rapordan Fotoğraf</h2>
-                <p>Rapor Excel’inizden URL veya gömülü verilere göre fotoğrafları çıkarıp indirin. Ayarlar ve iş mantığı bu ekrandan yönetilir.</p>
+                <h2>Photo Extractor</h2>
+                <p>Extract photos from report Excel files by URL column and download them as a structured ZIP.</p>
                 {% if is_pro %}
-                <a class="btn btn-secondary" href="{{ url_for('rapor_fotograf_app') }}">Fotoğraf indirmeye git →</a>
+                <a class="btn btn-secondary" href="{{ url_for('rapor_fotograf_app') }}">Open Photo Extractor →</a>
                 {% else %}
-                <a class="btn btn-secondary" href="{{ url_for('pricing', reason='pro_required', next='/rapor-fotograf') }}">Pro ile aç →</a>
+                <a class="btn btn-secondary" href="{{ url_for('pricing', reason='pro_required', next='/rapor-fotograf') }}">Unlock with Pro →</a>
                 {% endif %}
             </article>
         </div>
@@ -171,14 +171,14 @@
             &nbsp;·&nbsp;
             <span style="opacity:0.85;">Plan: {{ user_plan|upper }}</span>
             &nbsp;·&nbsp;
-            <a href="{{ url_for('landing') }}" style="color:#fff;font-weight:600;">Site</a>
+            <a href="{{ url_for('landing') }}" style="color:#fff;font-weight:600;">Website</a>
             &nbsp;·&nbsp;
-            <a href="{{ url_for('pricing') }}" style="color:#fff;font-weight:600;">Fiyatlandırma</a>
+            <a href="{{ url_for('pricing') }}" style="color:#fff;font-weight:600;">Pricing</a>
             &nbsp;·&nbsp;
-            <a href="{{ url_for('logout') }}" style="color:#fff;font-weight:600;">Çıkış</a>
+            <a href="{{ url_for('logout') }}" style="color:#fff;font-weight:600;">Log out</a>
             {% endif %}
         </div>
-        <p class="home-footer">Dosyalarınız hesabınıza özel klasörde saklanır.</p>
+        <p class="home-footer">Your files are stored in a private folder for your account.</p>
         <p class="home-credit">Created by M.Akcali</p>
     </div>
 </body>
