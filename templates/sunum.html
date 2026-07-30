@@ -1735,18 +1735,26 @@
             uploadStatus.innerHTML = '<div>Uploading file...</div>';
             
             fetch('/upload', { method: 'POST', body: formData })
-                .then(response => {
+                .then(async (response) => {
                     if (response.status === 401) {
                         window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
                         return null;
                     }
-                    return response.json();
+                    let data = null;
+                    try {
+                        data = await response.json();
+                    } catch (parseErr) {
+                        console.error('Upload response parse error:', parseErr);
+                        throw new Error('Server returned an invalid response (HTTP ' + response.status + '). Please try again.');
+                    }
+                    if (!response.ok || (data && data.error)) {
+                        const msg = (data && data.error) ? data.error : ('Upload failed (HTTP ' + response.status + ')');
+                        throw new Error(msg);
+                    }
+                    return data;
                 })
                 .then(data => {
                     if (!data) return;
-                if (data.error) {
-                    uploadStatus.innerHTML = `<div class="error">Error: ${data.error}</div>`;
-                } else {
                     currentFileData = data;
                     uploadStatus.innerHTML = `<div class="success">File uploaded successfully: ${data.filename}</div>`;
                     showSheetSelection(data.sheets);
@@ -1761,9 +1769,11 @@
                     document.getElementById('themeSection').style.display = 'block';
                     showNormalPreview();
                     updatePreview();
-                }
-            })
-            .catch(error => { console.error('Error:', error); uploadStatus.innerHTML = '<div class="error">An error occurred while uploading the file</div>'; });
+                })
+                .catch(error => {
+                    console.error('Upload error:', error);
+                    uploadStatus.innerHTML = `<div class="error">Error: ${error.message || 'An error occurred while uploading the file'}</div>`;
+                });
         }
         
         function showSheetSelection(sheets) {

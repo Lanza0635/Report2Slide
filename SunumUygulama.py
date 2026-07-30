@@ -557,9 +557,8 @@ def rapor_fotograf_count():
     if not filename:
         return jsonify({'error': 'Filename is required'}), 400
     upload_dir = user_upload_dir()
-    safe = secure_filename(filename)
-    filepath = os.path.join(upload_dir, safe)
-    if not os.path.isfile(filepath):
+    safe, filepath = resolve_user_upload(upload_dir, filename)
+    if not filepath:
         return jsonify({'error': 'File not found. Please upload an Excel file first.'}), 400
     try:
         from rapor_fotograf_logic import count_photo_urls_for_options
@@ -567,6 +566,7 @@ def rapor_fotograf_count():
         total = count_photo_urls_for_options(upload_dir, safe, options)
         return jsonify({'total': total})
     except Exception as e:
+        print(f"[rapor-fotograf/count] {type(e).__name__}: {e}")
         return jsonify({'error': str(e)}), 400
 
 
@@ -579,14 +579,14 @@ def rapor_fotograf_process():
     if not filename:
         return jsonify({'error': 'Filename is required'}), 400
     upload_dir = user_upload_dir()
-    safe = secure_filename(filename)
-    filepath = os.path.join(upload_dir, safe)
-    if not os.path.isfile(filepath):
+    safe, filepath = resolve_user_upload(upload_dir, filename)
+    if not filepath:
         return jsonify({'error': 'File not found. Please upload an Excel file first.'}), 400
     try:
         from rapor_fotograf_logic import run_photo_extraction
         result = run_photo_extraction(upload_dir, safe, options)
     except Exception as e:
+        print(f"[rapor-fotograf/process] {type(e).__name__}: {e}")
         return jsonify({'error': str(e)}), 400
 
     if isinstance(result, dict) and result.get('mode') == 'zip':
@@ -631,9 +631,8 @@ def rapor_fotograf_process_stream():
     if not filename:
         return jsonify({'error': 'Filename is required'}), 400
     upload_dir = user_upload_dir()
-    safe = secure_filename(filename)
-    filepath = os.path.join(upload_dir, safe)
-    if not os.path.isfile(filepath):
+    safe, filepath = resolve_user_upload(upload_dir, filename)
+    if not filepath:
         return jsonify({'error': 'File not found. Please upload an Excel file first.'}), 400
 
     def generate():
@@ -693,29 +692,160 @@ def rapor_fotograf_download_token(token: str):
     return resp
 
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+
+# Turkish / Latin extended → ASCII for safe filesystem names
+_TR_TRANSLATE = str.maketrans({
+    "ç": "c", "Ç": "C",
+    "ğ": "g", "Ğ": "G",
+    "ı": "i", "İ": "I",
+    "ö": "o", "Ö": "O",
+    "ş": "s", "Ş": "S",
+    "ü": "u", "Ü": "U",
+    "â": "a", "Â": "A",
+    "î": "i", "Î": "I",
+    "û": "u", "Û": "U",
+})
+
+
+def sanitize_upload_filename(original_name: str) -> str:
+    """
+    Normalize Turkish/special characters, then apply secure_filename.
+    Falls back to a unique name if the result would be empty.
+    """
+    import unicodedata
+
+    raw = (original_name or "").strip()
+    if not raw:
+        return f"upload_{secrets.token_hex(8)}.xlsx"
+
+    base, ext = os.path.splitext(raw)
+    ext = ext.lower() if ext else ""
+
+    # Map Turkish letters first (before NFKD), then strip remaining accents
+    base_mapped = base.translate(_TR_TRANSLATE)
+    base_norm = unicodedata.normalize("NFKD", base_mapped)
+    base_norm = "".join(c for c in base_norm if not unicodedata.combining(c))
+    base_ascii = "".join(ch if ord(ch) < 128 else "_" for ch in base_norm)
+
+    candidate = secure_filename(base_ascii + ext)
+    if not candidate or candidate in (".", "..") or candidate.startswith("."):
+        suffix = ext if ext in (".xlsx", ".xls") else ".xlsx"
+        candidate = f"upload_{secrets.token_hex(8)}{suffix}"
+    stem, sex = os.path.splitext(candidate)
+    if not stem:
+        candidate = f"upload_{secrets.token_hex(8)}{sex or '.xlsx'}"
+    return candidate
+
+
+def resolve_user_upload(upload_dir: str, filename: str) -> tuple[str, str] | tuple[None, None]:
+    """Find an uploaded file under the user folder; prevent path traversal."""
+    if not filename:
+        return None, None
+    name = os.path.basename(str(filename).strip())
+    if not name or name in (".", "..") or "/" in name or "\\" in name:
+        return None, None
+    # Prefer exact name returned from upload, then sanitized variants
+    candidates = []
+    for c in (name, secure_filename(name), sanitize_upload_filename(name)):
+        if c and c not in candidates:
+            candidates.append(c)
+    for c in candidates:
+        path = os.path.join(upload_dir, c)
+        if os.path.isfile(path):
+            return c, path
+    return None, None
+
+
+def unique_upload_path(upload_dir: str, filename: str) -> tuple[str, str]:
+    """Return (final_filename, full_path), appending _1, _2… if needed."""
+    name = filename
+    path = os.path.join(upload_dir, name)
+    if not os.path.exists(path):
+        return name, path
+    stem, ext = os.path.splitext(name)
+    n = 1
+    while True:
+        name = f"{stem}_{n}{ext}"
+        path = os.path.join(upload_dir, name)
+        if not os.path.exists(path):
+            return name, path
+        n += 1
+
+
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload_file():
-    if 'file' not in request.files: return jsonify({'error': 'No file selected'}), 400
-    file = request.files['file']
-    if file.filename == '': return jsonify({'error': 'No file selected'}), 400
-    
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file selected. Please choose an Excel file (.xlsx or .xls).'}), 400
+        file = request.files['file']
+        original_name = file.filename or ''
+        if original_name == '':
+            return jsonify({'error': 'No file selected. Please choose an Excel file (.xlsx or .xls).'}), 400
+
+        if not allowed_file(original_name):
+            return jsonify({
+                'error': f'Invalid file format for "{original_name}". Only .xlsx and .xls are supported.'
+            }), 400
+
+        filename = sanitize_upload_filename(original_name)
         upload_dir = user_upload_dir()
-        filepath = os.path.join(upload_dir, filename)
-        file.save(filepath)
+        filename, filepath = unique_upload_path(upload_dir, filename)
+
+        print(
+            f"[upload] user={current_user_id()} original={original_name!r} "
+            f"saved_as={filename!r} path={filepath!r}"
+        )
+
+        try:
+            file.save(filepath)
+        except Exception as e:
+            print(f"[upload] save failed: {type(e).__name__}: {e}")
+            return jsonify({
+                'error': f'Could not save the uploaded file. Please try again. ({type(e).__name__})'
+            }), 500
+
+        if not os.path.isfile(filepath) or os.path.getsize(filepath) == 0:
+            print(f"[upload] empty or missing after save: {filepath!r}")
+            return jsonify({'error': 'Upload failed: the saved file is empty or missing.'}), 500
+
         try:
             excel_file = pd.ExcelFile(filepath)
             sheet_names = excel_file.sheet_names
+            if not sheet_names:
+                return jsonify({'error': 'The Excel file has no sheets.'}), 400
             sheets_data = {}
             for sheet in sheet_names:
                 df = pd.read_excel(filepath, sheet_name=sheet)
-                sheets_data[sheet] = df.columns.tolist()
-            return jsonify({'filename': filename, 'sheets': sheet_names, 'sheets_data': sheets_data})
+                sheets_data[sheet] = [str(c) for c in df.columns.tolist()]
+            print(f"[upload] ok sheets={sheet_names!r} cols={[len(v) for v in sheets_data.values()]}")
+            return jsonify({
+                'filename': filename,
+                'original_filename': original_name,
+                'sheets': sheet_names,
+                'sheets_data': sheets_data,
+            })
         except Exception as e:
-            return jsonify({'error': f'Could not read Excel file: {str(e)}'}), 500
-    return jsonify({'error': 'Invalid file format'}), 400
+            print(f"[upload] Excel read failed for {filepath!r}: {type(e).__name__}: {e}")
+            try:
+                os.remove(filepath)
+            except OSError:
+                pass
+            return jsonify({
+                'error': (
+                    f'Could not read Excel file "{original_name}". '
+                    f'Make sure it is a valid .xlsx/.xls workbook. Details: {type(e).__name__}: {e}'
+                )
+            }), 500
+    except Exception as e:
+        print(f"[upload] unexpected error: {type(e).__name__}: {e}")
+        return jsonify({
+            'error': f'Upload failed unexpectedly ({type(e).__name__}: {e}). Please try again or rename the file.'
+        }), 500
+
 
 @app.route('/create_presentation', methods=['POST'])
 @pro_required
@@ -742,10 +872,9 @@ def create_presentation():
 
     if not filename:
         return jsonify({'error': 'Filename is required'}), 400
-    safe_name = secure_filename(filename)
     upload_dir = user_upload_dir()
-    filepath = os.path.join(upload_dir, safe_name)
-    if not os.path.isfile(filepath):
+    safe_name, filepath = resolve_user_upload(upload_dir, filename)
+    if not filepath:
         return jsonify({'error': 'File not found. Please upload an Excel file first.'}), 400
     
     temp_bg_path = None
@@ -978,11 +1107,7 @@ def create_presentation():
         if temp_bg_path and os.path.exists(temp_bg_path): os.unlink(temp_bg_path)
         return jsonify({'error': f'Could not generate presentation: {str(e)}'}), 500
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
 if __name__ == '__main__':
     config.UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
-    # threaded: eşzamanlı istekler. use_reloader=False: uzun fotoğraf işlemi sırasında
-    # dosya kaydetince sunucunun yeniden başlaması SSE bağlantısını koparır (TypeError: network error).
+    # threaded: concurrent requests. use_reloader=False avoids SSE drop on reload.
     app.run(debug=True, threaded=True, use_reloader=False)

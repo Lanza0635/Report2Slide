@@ -761,21 +761,26 @@
             setUploadStatus('Uploading…', undefined);
             setProgress(30);
             fetch('/upload', { method: 'POST', body: fd })
-                .then((r) => {
+                .then(async (r) => {
                     if (r.status === 401) {
                         window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
                         return Promise.reject(new Error('Sign-in required'));
                     }
-                    return r.json().then((j) => ({ ok: r.ok, j }));
+                    let j = {};
+                    try {
+                        j = await r.json();
+                    } catch (parseErr) {
+                        console.error('Upload response parse error:', parseErr);
+                        throw new Error('Server returned an invalid response (HTTP ' + r.status + ').');
+                    }
+                    if (!r.ok || j.error) {
+                        throw new Error(j.error || ('Upload failed (HTTP ' + r.status + ')'));
+                    }
+                    return j;
                 })
-                .then(({ ok, j }) => {
+                .then((j) => {
                     setProgress(100);
                     setTimeout(() => setProgress(null), 400);
-                    if (!ok || j.error) {
-                        setUploadStatus(j.error || 'Upload failed', false);
-                        log(j.error || 'Upload error', true);
-                        return;
-                    }
                     serverFilename = j.filename;
                     sheetsData = j.sheets_data || {};
                     setUploadStatus('File ready: ' + j.filename, true);
@@ -785,9 +790,10 @@
                     log('Upload complete. Sheets: ' + (j.sheets || []).join(', '));
                 })
                 .catch((e) => {
+                    console.error('Upload error:', e);
                     setProgress(null);
-                    setUploadStatus(String(e), false);
-                    log(String(e), true);
+                    setUploadStatus(e && e.message ? e.message : String(e), false);
+                    log(e && e.message ? e.message : String(e), true);
                 });
         });
 
