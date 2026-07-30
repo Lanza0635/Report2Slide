@@ -148,21 +148,13 @@
                 <div class="home-card-icon sunum" aria-hidden="true">📊</div>
                 <h2>Slide Generator</h2>
                 <p>Build PowerPoint decks from Excel image URLs and metadata. Single, double, or triple slide layouts.</p>
-                {% if is_pro %}
                 <a class="btn btn-primary" href="{{ url_for('sunum_app') }}">Open Slide Generator →</a>
-                {% else %}
-                <a class="btn btn-primary" href="{{ url_for('pricing', reason='pro_required', next='/sunum') }}">Unlock with Pro →</a>
-                {% endif %}
             </article>
             <article class="home-card">
                 <div class="home-card-icon rapor" aria-hidden="true">🖼️</div>
                 <h2>Photo Extractor</h2>
                 <p>Extract photos from report Excel files by URL column and download them as a structured ZIP.</p>
-                {% if is_pro %}
                 <a class="btn btn-secondary" href="{{ url_for('rapor_fotograf_app') }}">Open Photo Extractor →</a>
-                {% else %}
-                <a class="btn btn-secondary" href="{{ url_for('pricing', reason='pro_required', next='/rapor-fotograf') }}">Unlock with Pro →</a>
-                {% endif %}
             </article>
         </div>
         <div class="home-user" style="margin-top:22px;text-align:center;color:rgba(255,255,255,0.9);font-size:0.9rem;">

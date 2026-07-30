@@ -631,9 +631,59 @@
         .bg-gallery-item .bg-gallery-delete:hover {
             background: #c82333;
         }
+        .soft-paywall {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.55);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .soft-paywall.show { display: flex; }
+        .soft-paywall-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+        .soft-paywall-card h3 { margin: 0 0 10px; font-size: 1.2rem; color: #1a1a2e; }
+        .soft-paywall-card p { margin: 0 0 20px; color: #64748b; font-size: 0.95rem; line-height: 1.5; }
+        .soft-paywall-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .soft-paywall-actions a, .soft-paywall-actions button {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        .soft-paywall-actions .btn-pro {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+        .soft-paywall-actions .btn-close-pw {
+            background: #f1f5f9;
+            color: #334155;
+        }
     </style>
 </head>
 <body>
+    <div class="soft-paywall" id="softPaywall" role="dialog" aria-modal="true" aria-labelledby="softPaywallTitle">
+        <div class="soft-paywall-card">
+            <h3 id="softPaywallTitle">Pro plan required to generate slides</h3>
+            <p>Upload and preview are free. Upgrade to Pro to generate and download your PowerPoint deck.</p>
+            <div class="soft-paywall-actions">
+                <a class="btn-pro" id="softPaywallUpgrade" href="{{ url_for('pricing', reason='pro_required', next='/sunum') }}">Upgrade to Pro</a>
+                <button type="button" class="btn-close-pw" id="softPaywallClose">Not now</button>
+            </div>
+        </div>
+    </div>
     <nav class="app-top-nav">
         <a href="{{ url_for('dashboard') }}">← Dashboard</a>
         <span class="app-top-nav-title">Slide Generator</span>
@@ -1066,6 +1116,22 @@
     </div>
 
     <script>
+        const IS_PRO = {{ 'true' if is_pro else 'false' }};
+        const PRICING_URL = {{ url_for('pricing', reason='pro_required', next='/sunum')|tojson }};
+
+        function showSoftPaywall() {
+            const el = document.getElementById('softPaywall');
+            if (el) el.classList.add('show');
+        }
+        function hideSoftPaywall() {
+            const el = document.getElementById('softPaywall');
+            if (el) el.classList.remove('show');
+        }
+        document.getElementById('softPaywallClose')?.addEventListener('click', hideSoftPaywall);
+        document.getElementById('softPaywall')?.addEventListener('click', (e) => {
+            if (e.target.id === 'softPaywall') hideSoftPaywall();
+        });
+
         let currentFileData = null;
         let positionConfig = { single: {}, double: {}, triple: {} };
         let currentLabelCount = 1;
@@ -1995,6 +2061,10 @@
         }
         
         function createPresentation() {
+            if (!IS_PRO) {
+                showSoftPaywall();
+                return;
+            }
             const selectedSheets = getSelectedSheets();
             const presentationType = document.getElementById('presentationType').value;
             const selectedColumns = getSelectedColumns();
@@ -2062,6 +2132,14 @@
             .then(response => {
                 if (response.status === 401) {
                     window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+                    return null;
+                }
+                if (response.status === 403) {
+                    clearInterval(progressInterval);
+                    createButton.disabled = false;
+                    createButton.textContent = 'Generate Presentation';
+                    progressContainer.style.display = 'none';
+                    showSoftPaywall();
                     return null;
                 }
                 if (response.ok) return response.blob();

@@ -284,10 +284,60 @@
             0% { transform: translateX(-30%); }
             100% { transform: translateX(250%); }
         }
+        .soft-paywall {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.55);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .soft-paywall.show { display: flex; }
+        .soft-paywall-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+        .soft-paywall-card h3 { margin: 0 0 10px; font-size: 1.2rem; color: #1e293b; }
+        .soft-paywall-card p { margin: 0 0 20px; color: #64748b; font-size: 0.95rem; line-height: 1.5; }
+        .soft-paywall-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .soft-paywall-actions a, .soft-paywall-actions button {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        .soft-paywall-actions .btn-pro {
+            background: linear-gradient(135deg, #0d9488, #22c55e);
+            color: #fff;
+        }
+        .soft-paywall-actions .btn-close-pw {
+            background: #f1f5f9;
+            color: #334155;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
+    <div class="soft-paywall" id="softPaywall" role="dialog" aria-modal="true" aria-labelledby="softPaywallTitle">
+        <div class="soft-paywall-card">
+            <h3 id="softPaywallTitle">Pro plan required to generate slides</h3>
+            <p>Upload and configure for free. Upgrade to Pro to export your photo ZIP.</p>
+            <div class="soft-paywall-actions">
+                <a class="btn-pro" href="{{ url_for('pricing', reason='pro_required', next='/rapor-fotograf') }}">Upgrade to Pro</a>
+                <button type="button" class="btn-close-pw" id="softPaywallClose">Not now</button>
+            </div>
+        </div>
+    </div>
     <nav class="rf-nav">
         <a href="{{ url_for('dashboard') }}">← Dashboard</a>
         <span class="rf-nav-title">Photo Extractor</span>
@@ -366,6 +416,21 @@
     </main>
 
     <script>
+        const IS_PRO = {{ 'true' if is_pro else 'false' }};
+
+        function showSoftPaywall() {
+            const box = document.getElementById('softPaywall');
+            if (box) box.classList.add('show');
+        }
+        function hideSoftPaywall() {
+            const box = document.getElementById('softPaywall');
+            if (box) box.classList.remove('show');
+        }
+        document.getElementById('softPaywallClose')?.addEventListener('click', hideSoftPaywall);
+        document.getElementById('softPaywall')?.addEventListener('click', (e) => {
+            if (e.target.id === 'softPaywall') hideSoftPaywall();
+        });
+
         let currentFile = null;
         let serverFilename = null;
         let sheetsData = {};
@@ -560,6 +625,35 @@
                         reject(new Error('Sign-in required'));
                         return;
                     }
+                    if (xhr.status === 403) {
+                        const ct = (xhr.getResponseHeader('Content-Type') || '').toLowerCase();
+                        if (ct.includes('application/json') && xhr.response) {
+                            const rd = new FileReader();
+                            rd.onload = () => {
+                                try {
+                                    const j = JSON.parse(rd.result);
+                                    const err = new Error(j.error || 'Pro plan required to generate slides');
+                                    err.code = 'pro_required';
+                                    reject(err);
+                                } catch {
+                                    const err = new Error('Pro plan required to generate slides');
+                                    err.code = 'pro_required';
+                                    reject(err);
+                                }
+                            };
+                            rd.onerror = () => {
+                                const err = new Error('Pro plan required to generate slides');
+                                err.code = 'pro_required';
+                                reject(err);
+                            };
+                            rd.readAsText(xhr.response);
+                            return;
+                        }
+                        const err = new Error('Pro plan required to generate slides');
+                        err.code = 'pro_required';
+                        reject(err);
+                        return;
+                    }
                     const ct = (xhr.getResponseHeader('Content-Type') || '').toLowerCase();
                     if (ct.includes('application/json')) {
                         const rd = new FileReader();
@@ -699,6 +793,10 @@
 
         el('rfRunBtn').addEventListener('click', async () => {
             if (!serverFilename) return;
+            if (!IS_PRO) {
+                showSoftPaywall();
+                return;
+            }
             const columnsBySheet = collectColumnsBySheet();
             const keys = Object.keys(columnsBySheet);
             if (keys.length === 0) {
@@ -793,7 +891,12 @@
                 setTimeout(() => setProgress(null), 1800);
             } catch (e) {
                 setProgress(null);
-                log('[ERROR] ' + (e && e.message ? e.message : String(e)), true);
+                if (e && e.code === 'pro_required') {
+                    showSoftPaywall();
+                    log('[ERROR] Pro plan required to generate slides', true);
+                } else {
+                    log('[ERROR] ' + (e && e.message ? e.message : String(e)), true);
+                }
             } finally {
                 el('rfRunBtn').disabled = false;
             }

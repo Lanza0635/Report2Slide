@@ -175,9 +175,9 @@ def pro_required(view):
 
         if _wants_json_error():
             return jsonify({
-                "error": "This feature requires a Pro subscription.",
+                "error": "Pro plan required to generate slides",
                 "code": "pro_required",
-                "pricing_url": url_for("pricing"),
+                "pricing_url": url_for("pricing", reason="pro_required"),
             }), 403
         return redirect(url_for("pricing", reason="pro_required", next=request.path))
 

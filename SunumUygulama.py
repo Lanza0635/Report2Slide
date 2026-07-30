@@ -532,24 +532,24 @@ def landing():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    """Signed-in home: choose Rapordan Sunum or Rapordan Fotoğraf."""
+    """Signed-in home: choose Slide Generator or Photo Extractor."""
     return render_template('home.html')
 
 
 @app.route('/sunum')
-@pro_required
+@login_required
 def sunum_app():
     return render_template('sunum.html')
 
 
 @app.route('/rapor-fotograf')
-@pro_required
+@login_required
 def rapor_fotograf_app():
     return render_template('rapor_fotograf.html')
 
 
 @app.route('/api/rapor-fotograf/count', methods=['POST'])
-@pro_required
+@login_required
 def rapor_fotograf_count():
     data = request.json or {}
     filename = data.get('filename')
@@ -694,7 +694,7 @@ def rapor_fotograf_download_token(token: str):
 
 
 @app.route('/upload', methods=['POST'])
-@pro_required
+@login_required
 def upload_file():
     if 'file' not in request.files: return jsonify({'error': 'No file selected'}), 400
     file = request.files['file']
