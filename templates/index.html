@@ -510,6 +510,11 @@
             color: var(--text);
         }
 
+        footer a:not(.brand):hover {
+            color: var(--text);
+            text-decoration: underline;
+        }
+
         .nav-toggle {
             display: none;
             background: none;
@@ -578,6 +583,8 @@
             50% { transform: translateX(-50%) translateY(-6px); }
         }
     </style>
+    <script>window.lemonSqueezyAffiliateConfig = { store: "proposaly-app" };</script>
+    <script src="https://lmsqueezy.com/affiliate.js" defer></script>
 </head>
 <body>
     <div class="site-bg" aria-hidden="true"></div>
@@ -721,6 +728,7 @@
         <footer>
             <a class="brand" href="{{ url_for('landing') }}">Report<span>2</span>Slide</a>
             <span>© {{ current_year }} Report2Slide. Built for teams who ship reports every week.</span>
+            <a href="https://proposaly-app.lemonsqueezy.com/affiliates" target="_blank" rel="noopener noreferrer">Become an Affiliate</a>
         </footer>
     </div>
 
